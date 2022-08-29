@@ -12,6 +12,25 @@
     animation: App-logo-spin infinite 20s linear;
   }
 }
+.table tr {
+  border: black solid 3px !important;
+  table-layout: fixed;
+}
+
+tr th {
+  height: 50px;
+}
+
+tr td {
+  height: 100px;
+}
+
+td img {
+  text-align: left;
+  width: 300px;
+}
+
+
 
 .App-header {
   background-color: #282c34;
