@@ -1,11 +1,9 @@
 
 class Shipment {
-    barcodeURL = "";
     shipmentNumber = "";
     vendor = "";
 
-    constructor(url, shipmentNumber, vendor) {
-        this.barcodeURL = url;
+    constructor(shipmentNumber, vendor) {
         this.shipmentNumber = shipmentNumber;
         this.vendor = vendor;
     }
@@ -32,19 +30,22 @@ class ShipmentManager {
                 }
             }
 
-            if(vendor !== "")
+            if(vendor === "")
             {
-                let url = "https://bwipjs-api.metafloor.com/?bcid=code128&text=";
+                //If theres no vendor, the shipment is either a extra sub shipment of another manual or is a R shipment
                 let tempNo = shipmentNo.split('/');
-                if(tempNo.length > 1) {
-                    url += tempNo[0] + "%2f" + tempNo[1];
-                }
-                else {
-                    url += shipmentNo;
-                }
-                url += "&scaleX=2&scaleY=2";
+                if(tempNo.length > 1)
+                {
 
-                this.shipments.push(new Shipment(url, shipmentNo, vendor));
+                    this.shipments.push(new Shipment(shipmentNo, ""));
+
+
+                }
+
+
+            }
+            else {
+                this.shipments.push(new Shipment(shipmentNo, vendor));
             }
         }
     }

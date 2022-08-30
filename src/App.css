@@ -23,6 +23,7 @@ tr th {
 
 tr td {
   height: 100px;
+  vertical-align: center;
 }
 
 td img {
