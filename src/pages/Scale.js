@@ -12,6 +12,7 @@ function Scale()
                 <p>
                     Generate name and login QR codes
                 </p>
+                <p>Current Work in Progress</p>
             </div>
         </div>
     );

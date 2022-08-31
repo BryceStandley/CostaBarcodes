@@ -26,9 +26,10 @@ tr td {
   vertical-align: center;
 }
 
-td img {
-  text-align: left;
-  width: 300px;
+td {
+  display: table-cell;
+  vertical-align: middle;
+  horiz-align: center;
 }
 
 

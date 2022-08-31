@@ -4,7 +4,8 @@ import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Barcode from "react-barcode";
 import printJS from "print-js";
-import print from "print.js/src/js/print";
+import PrintJob from "print-job";
+
 
 
 function Worksheet() {
@@ -46,13 +47,7 @@ function Worksheet() {
     function PrintPage()
     {
         //let t = document.getElementById("contentRender");
-        //PrintJob.print("#contentRender");
-
-        printJS({
-            printable: "contentRender",
-            type: 'html',
-            targetStyles: ['*']
-        });
+        PrintJob.print("#contentRender");
     }
 
     function CreateSheetTable(shipments)
@@ -71,7 +66,7 @@ function Worksheet() {
                     shipments.map((value, key) => {
                         return (
                             <tr key={key}>
-                                <td><Barcode value={value.shipmentNumber}/></td>
+                                <td><Barcode value={value.shipmentNumber} height="50" renderer="img"/></td>
                                 <td>{value.shipmentNumber}</td>
                                 <td>{value.vendor}</td>
                             </tr>
@@ -113,6 +108,7 @@ function Worksheet() {
                 <hr/>
                 <div>
                     <div id="contentRender">
+                        <h1>Receival Worksheet</h1>
                         {contentRender}
                     </div>
                 </div>
