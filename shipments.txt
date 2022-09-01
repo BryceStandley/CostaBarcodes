@@ -3,9 +3,33 @@ F1184843             BETA SPUDS
 F1184855             PREMIER FARMS      
 F1184934             AGRIFRESH          
 F1184935             AGRIFRESH          
-630080/6320357A      HARVEY CITRUS P/L  
+F1184935
+630080/6320357A      HARVEY CITRUS P/L
 652911/6320197       CHANTEC P/L        
 652911/6320197A
 743497/6320211       BLUE BELLS (WA) P/L
-7814141                                 
-7814142                                 
+7814141              Browns
+7814142
+7814142
+F1184934             AGRIFRESH
+F1184935             AGRIFRESH
+
+
+
+
+
+
+
+                    //If theres no vendor, the shipment is either a extra sub shipment of another manual or is a R shipment
+                    let tempNo = shipmentNo.split('/');
+                    if (tempNo.length > 1) {
+                        const s = new Shipment(shipmentNo, "");
+                        s.manualShipment = true;
+                        this.shipments.push(s);
+
+
+                    } else if (filter.IncludeRShipment) {
+                        const s = new Shipment(shipmentNo, "");
+                        s.rShipment = true;
+                        this.shipments.push(s);
+                    }

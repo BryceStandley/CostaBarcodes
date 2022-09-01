@@ -5,19 +5,27 @@ import { BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-do
 import Worksheet from "./pages/Worksheet";
 import PalletLabel from "./pages/Pallet-label";
 import Scale from "./pages/Scale";
+import Footer from "./components/footer"
 
 function App() {
         return (
             <Router>
                 <div>
-                    <NavigationBar/>
+                    <div>
+                        <NavigationBar/>
+                    </div>
 
                     <Routes>
-                        <Route path="/" element={<Navigate to="/worksheet" replace/>}/>
                         <Route path="/worksheet" element={<Worksheet />}/>
                         <Route path="/pallet-label" element={<PalletLabel />}/>
                         <Route path="/scale" element={<Scale />}/>
+                        <Route path="/" element={<Navigate to="/worksheet" replace/>}/>
+                        <Route path="*" element={<Navigate to="/worksheet" replace/>}/>
                     </Routes>
+
+                    <div>
+                        <Footer />
+                    </div>
                 </div>
             </Router>
         );
