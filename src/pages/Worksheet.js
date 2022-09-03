@@ -209,9 +209,9 @@ function Worksheet() {
                     }}>Print</Button>
                     <Button variant="danger" onClick={ResetInputs}>Reset</Button>
                 </div>
-                <hr/>
                 <div>
                     <div id="content" hidden>
+                        <hr/>
                         <h1>Receival Worksheet</h1>
                         {contentRender}
                     </div>
