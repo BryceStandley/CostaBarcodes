@@ -19,17 +19,7 @@ F1184935             AGRIFRESH
 
 
 
-
-                    //If theres no vendor, the shipment is either a extra sub shipment of another manual or is a R shipment
-                    let tempNo = shipmentNo.split('/');
-                    if (tempNo.length > 1) {
-                        const s = new Shipment(shipmentNo, "");
-                        s.manualShipment = true;
-                        this.shipments.push(s);
+sscc
 
 
-                    } else if (filter.IncludeRShipment) {
-                        const s = new Shipment(shipmentNo, "");
-                        s.rShipment = true;
-                        this.shipments.push(s);
-                    }
+0011223344556677889900

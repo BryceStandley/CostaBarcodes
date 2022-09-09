@@ -5,10 +5,8 @@ class Pallet
     skuNumber = 0;
     quantity = 0;
 
-    constructor(caseNo, sku, qty) {
+    constructor(caseNo) {
         this.caseNumber = caseNo;
-        this.skuNumber = sku;
-        this.quantity = qty;
     }
 }
 
