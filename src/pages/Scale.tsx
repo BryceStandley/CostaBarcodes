@@ -1,38 +1,27 @@
 import jsPDF from "jspdf";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {Button, InputGroup} from "react-bootstrap";
 import {Input} from "reactstrap";
 import ScaleUser from "../objects/scaleUser";
 // @ts-ignore
 import bwip from "bwip-js";
 
-type SState = {
-    user: ScaleUser;
-}
 
-class Scale extends React.Component<any, SState>
+function Scale()
 {
-    usernameRef = useRef<HTMLInputElement>(null!);
-    passwordRef = useRef<HTMLInputElement>(null!);
+    const usernameRef = useRef<HTMLInputElement>(null);
+    const passwordRef = useRef<HTMLInputElement>(null);
+    const [user, setUser] = useState<ScaleUser>(new ScaleUser());
 
-    constructor(props: any) {
-        super(props);
-
-        this.GenerateOnClick = this.GenerateOnClick.bind(this);
-        this.ProcessLogin = this.ProcessLogin.bind(this);
-        this.GeneratePDF = this.GeneratePDF.bind(this);
-    }
-
-    ProcessLogin(username: string, password: string)
+    function ProcessLogin(username: string, password: string)
     {
-        this.setState({user: new ScaleUser(username, password)});
+        user.SetAndProcess(username, password);
     }
 
-    GeneratePDF()
+    function GeneratePDF()
     {
         const doc = new jsPDF({
             orientation: "l",
-            unit: "mm",
             format: "a7"
         })
 
@@ -43,21 +32,21 @@ class Scale extends React.Component<any, SState>
             let canvas = document.createElement('canvas');
             bwip.toCanvas(canvas, {
                 bcid: "qrcode",
-                text: this.state.user.qrData,
+                text: user.qrData,
                 parse: true,
                 });
 
             doc.setFontSize(22);
-            doc.text(this.state.user.name,
-                (pageWidth/2) - doc.getTextWidth(this.state.user.name)/2,
-                (pageHeight/4),
+            doc.text(user.name,
+                (pageWidth/2) - doc.getTextWidth(user.name)/2,
+                (pageHeight/4)
                 );
 
             doc.addImage(canvas.toDataURL('image/png'), 'image/png', 
-                (pageWidth/2) - canvas.width / 8,
+                (pageWidth/2) - canvas.width / 6,
                 ((pageHeight/5) * 2),
-                canvas.width,
-                canvas.height
+                (canvas.width / 3),
+                (canvas.height / 3)
                 );
 
 
@@ -65,22 +54,21 @@ class Scale extends React.Component<any, SState>
     }
 
 
-    GenerateOnClick()
+    function GenerateOnClick()
     {
-        if(this.usernameRef.current.value === "" || this.passwordRef.current.value === "") return;
+        if(usernameRef.current === null || passwordRef.current === null) return;
+        if(usernameRef.current.value === "" || passwordRef.current?.value === "") return;
 
-        this.ProcessLogin(this.usernameRef.current.value, this.passwordRef.current.value);
 
-            this.GeneratePDF();
+        ProcessLogin(usernameRef.current.value, passwordRef.current.value);
 
-            this.usernameRef.current.value = "";
-            this.passwordRef.current.value = "";
-            //this.setState({user: null});
+            GeneratePDF();
+
+            usernameRef.current.value = "";
+            passwordRef.current.value = "";
     }
 
-    render()
-    {
-        return(
+    return(
             <div>
                 <div style={{
                     textAlign: "center",
@@ -89,7 +77,7 @@ class Scale extends React.Component<any, SState>
                     <div>
                         <h1>Scale Login</h1>
                         <p>Generate scale user login barcode cards by entering the username and password of the account</p>
-                        <p>The username input will accept any value with or without the @costa.local</p>
+                        <p>The login card displays the users full name and a single QR Code for quick and easy login with a single scan </p>
 
                         <div style={{
                             display: "flex",
@@ -98,21 +86,21 @@ class Scale extends React.Component<any, SState>
                             }}>
                             <InputGroup style={{margin: '10px'}}>
                                 <InputGroup.Text id="ig-username">Username</InputGroup.Text>
-                                <Input id="usernameInput" name="usernameInput" type="text" placeholder="bryce.standley"/>
+                                <Input id="usernameInput" name="usernameInput" innerRef={usernameRef} type="text"/>
                             </InputGroup>
 
                             <InputGroup style={{margin: '10px'}}>
                                 <InputGroup.Text id="ig-password">Password</InputGroup.Text>
-                                <Input id="passwordInput" name="passwordInput" type="text" placeholder="hk35TG9TBAW3iz"/>
+                                <Input id="passwordInput" name="passwordInput" innerRef={passwordRef} type="text" />
                             </InputGroup>
                         </div>
                         <br />
-                        <Button style={{margin: "30px"}} variant="success" type="button" onClick={this.GenerateOnClick}>Process</Button>
+                        <Button style={{margin: "30px"}} variant="success" type="button" onClick={GenerateOnClick}>Process</Button>
                     </div>
                 </div>
             </div>
         );
-    }
+
 }
 
 export default Scale;

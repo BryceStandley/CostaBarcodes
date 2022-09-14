@@ -1,25 +1,16 @@
 
-import React, {ReactNode} from "react";
+import React, {ReactNode, useState} from "react";
 import {Button} from "react-bootstrap";
 import {library} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faHeartCrack} from "@fortawesome/free-solid-svg-icons";
 
-type BGState = {
-    barcode: string;
-    errorCode: ReactNode;
-}
 
-class BarcodeGen extends React.Component<any, BGState>
+function BarcodeGen()
 {
-    constructor(props: any) {
-        super(props);
-        this.GenerateOnClick = this.GenerateOnClick.bind(this);
+    const [error, setError] = useState<ReactNode>();
 
-        library.add(faHeartCrack);
-    }
-
-    CreateErrorCode()
+    function CreateErrorCode()
     {
         return(
             <p>
@@ -30,15 +21,11 @@ class BarcodeGen extends React.Component<any, BGState>
         );
     }
 
-    GenerateOnClick()
+    function GenerateOnClick()
     {
-        this.setState({errorCode: this.CreateErrorCode()})
+        setError(CreateErrorCode());
     }
 
-
-
-    render()
-    {
         return(
             <div>
                 <div style={{
@@ -49,14 +36,13 @@ class BarcodeGen extends React.Component<any, BGState>
                         <h1>General Barcode Creator</h1>
                         <p>Generate a general barcode for any type of use. Select from the basic barcode type presets and options, enter the barcode data and press generate to create a printable PDF with the containing barcode</p>
                         <hr />
-                        <div>{this.state.errorCode}</div>
+                        <div>{error}</div>
                         <br />
-                        <Button style={{margin: "30px"}} variant="success" type="button" onClick={this.GenerateOnClick}>Generate</Button>
+                        <Button style={{margin: "30px"}} variant="success" type="button" onClick={GenerateOnClick}>Generate</Button>
                     </div>
                 </div>
             </div>
         );
-    }
 
 
 }

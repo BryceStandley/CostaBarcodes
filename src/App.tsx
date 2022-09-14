@@ -19,8 +19,8 @@ function App() {
                     <Routes>
                         <Route path="/worksheet" element={<Worksheet />}/>
                         <Route path="/pallet-label" element={<PalletLabel />}/>
-                        <Route path="/scale-login" element={<Navigate to="/worksheet" replace/>}/>
-                        <Route path="/barcode-gen" element={<Navigate to="/worksheet" replace/>}/>
+                        <Route path="/scale-login" element={<Scale />}/>
+                        <Route path="/barcode-gen" element={<BarcodeGen />}/>
                         <Route path="/" element={<Navigate to="/worksheet" replace/>}/>
                         <Route path="*" element={<Navigate to="/worksheet" replace/>}/>
                     </Routes>
