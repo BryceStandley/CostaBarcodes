@@ -9,6 +9,8 @@ import {faHeartCrack} from "@fortawesome/free-solid-svg-icons";
 function BarcodeGen()
 {
     const [error, setError] = useState<ReactNode>();
+    library.add(faHeartCrack);
+
 
     function CreateErrorCode()
     {

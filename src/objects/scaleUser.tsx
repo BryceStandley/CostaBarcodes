@@ -6,12 +6,6 @@ class ScaleUser
     name = "";
     qrData = "";
 
-    constructor()
-    {
-        
-
-    }
-
     SetAndProcess(username: string, password: string)
     {
         this.password = password;
@@ -38,7 +32,7 @@ class ScaleUser
         });
 
         this.username = un;
-        console.log(nameTemp);
+        //console.log(nameTemp);
         this.name = nameTemp.slice(0, -1);
 
         this.qrData = un + "^TAB" + password;
