@@ -1,31 +1,111 @@
 
-import React, {ReactNode, useState} from "react";
-import {Button} from "react-bootstrap";
+import React, {ReactNode, useState, useRef} from "react";
+import {Button, Form, FormGroup, InputGroup, Row, Col, FloatingLabel} from "react-bootstrap";
 import {library} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faHeartCrack} from "@fortawesome/free-solid-svg-icons";
+import {Input} from "reactstrap";
+
+import jsPDF from "jspdf";
+import bwip from "bwip-js";
+import { Viewer, Worker } from "@react-pdf-viewer/core";
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
 
 function BarcodeGen()
 {
-    const [error, setError] = useState<ReactNode>();
-    library.add(faHeartCrack);
+    const barcodeDataRef = useRef<HTMLInputElement>(null!);
+    const formRef = useRef<HTMLFormElement>(null!);
+    const [validated, setValidated] = useState<boolean>(false);
+    const [viewerContent, setViewerContent] = useState<ReactNode>([]);
+    const viewer = useRef<HTMLDivElement>(null!);
+    const pdf = useRef<string>("");
+    const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
-
-    function CreateErrorCode()
-    {
-        return(
-            <p>
-                <FontAwesomeIcon icon="heart-crack"/>
-                ...Too bad so sad... This page is still a work in progress and currently unavailable... Stop snooping...
-                <FontAwesomeIcon icon="heart-crack"/>
-            </p>
-        );
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if(barcodeDataRef.current.value)
+        {
+            GenerateBarcode();
+        }
+        setValidated(true);
     }
 
-    function GenerateOnClick()
+    function GenerateBarcode()
     {
-        setError(CreateErrorCode());
+        const doc = new jsPDF({
+            unit: "px"
+        })
+
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+
+        let canvas = document.createElement('canvas');
+        bwip.toCanvas(canvas, {
+            bcid: "code128",
+            text: barcodeDataRef.current.value,
+        });
+
+
+        doc.setFontSize(32);
+        doc.text(barcodeDataRef.current.value,
+            (pageWidth/2) - doc.getTextWidth(barcodeDataRef.current.value)/2,
+            (pageHeight/2) - (doc.getTextDimensions(barcodeDataRef.current.value).h / 2)
+        );
+
+        let barcodeW = 0;
+        if(canvas.width > pageWidth)
+        {
+            barcodeW = pageWidth - 20;
+        }
+        else
+        {
+            barcodeW = canvas.width;
+        }
+
+        doc.addImage(canvas.toDataURL('image/png'), 'image/png',
+            (pageWidth/2) - ((barcodeW /2)),
+            ((pageHeight/2) + (doc.getTextDimensions(barcodeDataRef.current.value).h / 2)),
+            ((barcodeW)),
+            (canvas.height)
+        );
+
+
+        pdf.current = doc.output("dataurlstring");
+        setViewerContent(LoadPDF());
+
+        formRef.current.setAttribute("hidden", "");
+        viewer.current.removeAttribute("hidden");
+    }
+
+    function ResetOnClick()
+    {
+        formRef.current.removeAttribute("hidden");
+        setValidated(false);
+        barcodeDataRef.current.value = "";
+
+        viewer.current.setAttribute("hidden", "");
+        pdf.current = "";
+    }
+
+    function LoadPDF()
+    {
+        return (
+            <div>
+                <Button variant={"danger"} onClick={ResetOnClick} style={{margin: "10px"}}>Reset</Button>
+                <p>To rotate the page, use the PDF preview <em><strong>More Actions</strong></em> button on the right</p>
+                <Worker workerUrl={process.env.PUBLIC_URL +"/assets/js/pdf.worker.js"}>
+                    <div style={{height: '750px'}}>
+                        <Viewer fileUrl={pdf.current} defaultScale={1} plugins={[defaultLayoutPluginInstance,]}/>
+                    </div>
+                </Worker>
+
+            </div>
+        );
     }
 
         return(
@@ -34,13 +114,37 @@ function BarcodeGen()
                     textAlign: "center",
                     margin: '30px'
                 }}>
-                    <div>
-                        <h1>General Barcode Creator</h1>
-                        <p>Generate a general barcode for any type of use. Select from the basic barcode type presets and options, enter the barcode data and press generate to create a printable PDF with the containing barcode</p>
-                        <hr />
-                        <div>{error}</div>
-                        <br />
-                        <Button style={{margin: "30px"}} variant="success" type="button" onClick={GenerateOnClick}>Generate</Button>
+                    <h1>General Barcode Creator</h1>
+                    <p>Generate a general barcode for any type of use. Select from the basic barcode type presets and options, enter the barcode data and press generate to create a printable PDF with the containing barcode</p>
+                    <hr />
+
+                    <Form noValidate validated={validated} onSubmit={handleSubmit} ref={formRef}>
+                        <FormGroup>
+                            <div style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center"
+                            }}>
+                                <InputGroup style={{margin: '10px'}}>
+                                    <InputGroup.Text id="ig-data">Barcode Data</InputGroup.Text>
+                                    <Input type={"text"} innerRef={barcodeDataRef} required></Input>
+                                </InputGroup>
+                            </div>
+                            <Form.Control.Feedback type={"invalid"}/>
+                        </FormGroup>
+
+
+                        <div style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center"
+                        }}>
+                            <Button style={{margin: "30px"}} variant="success" type="submit">Generate</Button>
+                        </div>
+                    </Form>
+
+                    <div ref={viewer} hidden>
+                        {viewerContent}
                     </div>
                 </div>
             </div>

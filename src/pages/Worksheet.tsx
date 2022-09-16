@@ -83,11 +83,10 @@ function Worksheet()
                         <h1>Receival Worksheet</h1>
                         <p>Copy and paste shipment numbers and vendor names from WMS into the text box and hit generate
                             to create a SCI like worksheet</p>
-                        <p>Strictly one Shipment per line</p>
                         <hr/>
-                        <p>Line format: <em><strong>ShipmentNumber Vendor</strong></em> OR <em><strong>ShipmentNumber</strong></em> </p>
-                        <p>The first text in the line found is always treated as the shipment number and all remaining text is the vendor. The shipment and vendor details <strong>MUST</strong> be seperated by a space</p>
-                        <p>If no vendor text is found, the shipment is generated with a empty vendor</p>
+                        <p>Strictly one Shipment per line in the format: <em><strong>ShipmentNumber Vendor</strong></em> OR <em><strong>ShipmentNumber</strong></em> </p>
+                        <p>The first text in the line found is always treated as the shipment number and all remaining text is the vendor. The shipment and vendor details <strong>MUST</strong> be seperated by a space.
+                         If no vendor text is found, the shipment is generated with a empty vendor</p>
 
                         <textarea
                             name="mainInput"

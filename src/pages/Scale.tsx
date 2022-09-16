@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import React, { useRef, useState, ReactNode } from "react";
-import {Button, InputGroup} from "react-bootstrap";
+import {Button, InputGroup, FormGroup, Form} from "react-bootstrap";
 import {Input} from "reactstrap";
 import ScaleUser from "../objects/scaleUser";
 // @ts-ignore
@@ -23,8 +23,23 @@ function Scale()
     const passwordRef = useRef<HTMLInputElement>(null!);
     const user = useRef<ScaleUser>(new ScaleUser());
     const [viewer, setViewer] = useState<ReactNode>([])
+    const [validated, setValidated] = useState<boolean>(false);
 
     const defaultLayoutPluginInstance = defaultLayoutPlugin();
+
+    const handleSubmit = (e) => {
+        const form = e.currentTarget;
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (usernameRef.current.value && passwordRef.current.value) {
+
+            GenerateOnClick();
+        }
+
+        setValidated(true);
+
+    }
 
     function ProcessLogin(username: string, password: string)
     {
@@ -69,9 +84,6 @@ function Scale()
 
     function GenerateOnClick()
     {
-        if(usernameRef.current === null || passwordRef.current === null) return;
-        if(usernameRef.current.value === "" || passwordRef.current?.value === "") return;
-
 
         ProcessLogin(usernameRef.current.value, passwordRef.current.value);
 
@@ -111,6 +123,7 @@ function Scale()
         generatedPDFRef.current = "";
 
         setViewer([]);
+        setValidated(false);
         viewerRef.current.setAttribute("hidden", "");
         inputRef.current.removeAttribute("hidden");
         resetBtnRef.current.setAttribute("hidden", "");
@@ -125,36 +138,40 @@ function Scale()
                 }}>
                     <div>
                         <h1>Scale Login</h1>
-                        <p>Generate scale user login barcode cards by entering the username and password of the account</p>
-                        <p>The login card displays the users full name and a single QR Code for quick and easy login with a single scan</p>
+                        <p>Generate user login cards for Scale by entering the username and password of the account</p>
                         <hr/>
                         <p>Username:  <strong>FirstName.LastName</strong> OR  <strong>FirstName.LastName@costa.local</strong></p>
                         <p>Passwords can be any combination</p>
                         <hr />
                         <div ref={inputRef}>
-                            <div style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center"
-                            }}>
-                            <InputGroup style={{margin: '10px'}}>
-                                <InputGroup.Text id="ig-username">Username</InputGroup.Text>
-                                <Input id="usernameInput" name="usernameInput" innerRef={usernameRef} type="text"/>
-                            </InputGroup>
+                            <Form noValidate validated={validated} onSubmit={handleSubmit}>
+                                <FormGroup>
+                                    <div style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center"
+                                    }}>
+                                        <InputGroup style={{margin: '10px'}}>
+                                            <InputGroup.Text id="ig-username">Username</InputGroup.Text>
+                                            <Input id="usernameInput" name="usernameInput" innerRef={usernameRef} required={true} type="text"/>
+                                        </InputGroup>
+                                        <Form.Control.Feedback type="invalid"/>
 
-                            <InputGroup style={{margin: '10px'}}>
-                                <InputGroup.Text id="ig-password">Password</InputGroup.Text>
-                                <Input id="passwordInput" name="passwordInput" innerRef={passwordRef} type="text" />
-                            </InputGroup>
-                            </div>
+                                        <InputGroup style={{margin: '10px'}}>
+                                            <InputGroup.Text id="ig-password">Password</InputGroup.Text>
+                                            <Input id="passwordInput" name="passwordInput" innerRef={passwordRef} required={true} type="text" />
+                                        </InputGroup>
+                                    </div>
+                                </FormGroup>
 
-                            <div style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center"
-                            }}>
-                                <Button style={{margin: "30px"}} variant="success" type="button" onClick={GenerateOnClick}>Process</Button>
-                            </div>
+                                <div style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center"
+                                }}>
+                                    <Button style={{margin: "30px"}} variant="success" type="submit">Process</Button>
+                                </div>
+                            </Form>
                         </div>
                         <div style={{
                             display: "flex",

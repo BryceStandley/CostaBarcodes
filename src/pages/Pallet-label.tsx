@@ -15,13 +15,8 @@ function PalletLabel()
 {
     const generateBtnRef = useRef<HTMLButtonElement>(null!);
     const viewerRef = useRef<HTMLDivElement>(null!);
-    const resetRef = useRef<HTMLButtonElement>(null!);
     const inputRef = useRef<HTMLTextAreaElement>(null!);
-    const openPDFRefOld = useRef<HTMLButtonElement>(null!);
-    const openPDFRefNew = useRef<HTMLButtonElement>(null!);
     const [pallets, setPallets] = useState<Pallet[]>([])
-    const [pdf, setPDF] = useState<string>("");
-    let pdfString = "";
     const pdfDoc = useRef<string>("");
     const [pdfViewer, setPdfViewer] = useState<ReactNode>([]);
 
@@ -32,11 +27,12 @@ function PalletLabel()
 
         const doc = new jsPDF({
             orientation: "l",
-            unit: 'mm',
+            unit: 'px',
             format: "a6"
         });
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
+        const pageWidthMargin = pageWidth - 30;
 
         pallets?.forEach((value, i) => {
             let canvas = document.createElement('canvas');
@@ -45,17 +41,43 @@ function PalletLabel()
                 text: value.caseNumber,
             });
 
-            const imgWidth = canvas.width > pageWidth ? pageWidth - 15 : canvas.width;
-            const imgHeight = pageHeight / 3;
+            let barcodeW = canvas.width;
+
+            if(canvas.width > pageWidthMargin)
+            {
+                barcodeW = pageWidthMargin;
+            }
+
+
+            const barcodeH = ((canvas.height / canvas.width) * barcodeW) * 0.75;
 
             const data = canvas.toDataURL('image/png');
 
-            doc.addImage(data, 'image/png', (pageWidth - imgWidth) / 2, 25, imgWidth , imgHeight);
+            doc.addImage(data, 'image/png',
+                ((pageWidth/2) - (barcodeW / 2)),
+                ((pageHeight / 2) - (barcodeH / 2)),
+                barcodeW,
+                barcodeH,
+                "",
+                "MEDIUM",
+                0);
 
-            doc.setFontSize(30);
+
+            let fontSize = 28;
+            if(doc.getTextDimensions(value.caseNumber, {fontSize: 28}).w > pageWidth)
+            {
+                const unit = doc.getStringUnitWidth(value.caseNumber);
+                fontSize *= ((barcodeW) / doc.getTextDimensions(value.caseNumber, {fontSize: 28}).w);
+                //console.log(fontSize);
+            }
+
+            doc.setFontSize(fontSize);
+            //console.log(doc.getFontSize());
+
+
             doc.text(value.caseNumber,
-                (pageWidth-doc.getTextWidth(value.caseNumber)) / 2,
-                (25 + imgHeight + 15));
+                ((pageWidth/2) - (doc.getTextDimensions(value.caseNumber).w / 2)),
+                ((pageHeight/2) + (barcodeH / 2) + (doc.getTextDimensions(value.caseNumber).h)));
 
             if(i+1 !== pallets.length)
             {
@@ -63,17 +85,13 @@ function PalletLabel()
             }
         })
 
-        const p = doc.output("dataurlstring");
-
-        setPDF(p);
-        pdfString = p;
-        pdfDoc.current = p;
+        pdfDoc.current = doc.output("dataurlstring");
         DisplayPage();
     }
 
     function DisplayPage()
     {
-        if(pdfString === "") return;
+        if(pdfDoc.current === "") return;
 
         viewerRef.current.removeAttribute("hidden");
 
@@ -84,11 +102,15 @@ function PalletLabel()
     function CreateViewer()
     {
         return(
-            <Worker workerUrl={process.env.PUBLIC_URL +"/assets/js/pdf.worker.js"}>
-                <div style={{height: '750px'}}>
-                    <Viewer fileUrl={pdfDoc.current} defaultScale={1} plugins={[defaultLayoutPluginInstance,]}/>
-                </div>
-            </Worker>
+            <div>
+                <Button style={{margin: "30px"}} variant="danger" type="button" onClick={ResetOnClick}>Reset</Button>
+                <p>To rotate the page, use the PDF preview <em><strong>More Actions</strong></em> button on the right</p>
+                <Worker workerUrl={process.env.PUBLIC_URL +"/assets/js/pdf.worker.js"}>
+                    <div style={{height: '750px'}}>
+                        <Viewer fileUrl={pdfDoc.current} defaultScale={1} plugins={[defaultLayoutPluginInstance,]}/>
+                    </div>
+                </Worker>
+            </div>
         );
     }
 
@@ -99,16 +121,14 @@ function PalletLabel()
         line.forEach((value) =>
         {
             value = value.trim();
-            pallets.push(new Pallet(value));
+
+            if(value) {
+                pallets.push(new Pallet(value));
+            }
         })
 
-        if(pallets.length > 0)
-            return true;
-        else
-            return false;
+        return pallets.length !== 0;
     }
-
-
 
     function GenerateOnClick()
     {
@@ -121,34 +141,12 @@ function PalletLabel()
             setPallets([])
             inputRef.current.setAttribute("hidden", "");
             generateBtnRef.current.setAttribute("hidden", "");
-            openPDFRefOld.current.removeAttribute("hidden");
-            openPDFRefNew.current.removeAttribute("hidden");
-            resetRef.current.removeAttribute("hidden");
         }
 
     }
 
-    function OnOpenClickOld()
-    {
-        if(pdf === "") return;
-
-        window.open(pdf);
-    }
-
-    function OnOpenClickNew()
-    {
-        if(pdfDoc.current === "") return;
-
-        window.open(pdfDoc.current);
-    }
-
     function ResetOnClick()
     {
-        openPDFRefOld.current.setAttribute("hidden", "");
-        openPDFRefNew.current.setAttribute("hidden", "");
-        resetRef.current.setAttribute("hidden", "");
-        setPDF("");
-        pdfString = "";
         viewerRef.current.setAttribute("hidden", "");
         setPdfViewer([]);
         pdfDoc.current = "";
@@ -166,10 +164,8 @@ function PalletLabel()
                 }}>
                     <div>
                         <h1>Pallet Labels</h1>
-                        <p>Generate pallet label barcodes by copying and pasting any amount of case numbers from WMS and hit generate to create a printable PDF with a page for each label.</p>
-                        <p>Note. Open PDF buttons may or may not open the generated PDF due to network size limits</p>
-                        <hr/>
-                        <p>When opening a PDF, if it doesn't initially load, refresh the new tab. Note if '#blocked' is in the URL, the network has blocked opening the PDF due to size constraints. Try generating less labels at once.</p>
+                        <p>Generate Case Number Labels by entering any amount of case numbers and pressing generate</p>
+                        <p>Strictly one case number per line</p>
                             <textarea
                                 id="caseNumberInput"
                                 ref={inputRef}
@@ -181,10 +177,6 @@ function PalletLabel()
                             />
                             <br />
                             <Button style={{margin: "30px"}} ref={generateBtnRef} variant="success" type="button" onClick={GenerateOnClick}>Generate</Button>
-                            <Button hidden ref={openPDFRefOld} style={{margin: "30px"}} variant="primary" type="button" onClick={OnOpenClickOld}>Open PDF(Old)</Button>
-                            <Button hidden ref={openPDFRefNew} style={{margin: "30px"}} variant="primary" type="button" onClick={OnOpenClickNew}>Open PDF(New)</Button>
-                            <Button hidden ref={resetRef} style={{margin: "30px"}} variant="danger" type="button" onClick={ResetOnClick}>Reset</Button>
-
                         <div hidden ref={viewerRef}>
                             {pdfViewer}
                         </div>
