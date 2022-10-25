@@ -1,4 +1,4 @@
-import React, {useRef, useState, ReactNode} from "react";
+import React, {useRef, useState, ReactNode, ClipboardEvent} from "react";
 import Button from "react-bootstrap/Button";
 import {ShipmentManager, Shipment} from "../objects/shipment";
 import Table from "react-bootstrap/Table";
@@ -73,6 +73,15 @@ function Worksheet()
         );
     }
 
+    const OnPasteEvent = (e :ClipboardEvent<HTMLTextAreaElement>) => {
+        e.preventDefault();
+        let paste = e.clipboardData.getData('text');
+        inputRef.current.value += paste;
+        inputRef.current.value += "\n";
+        inputRef.current.scrollTop = inputRef.current.scrollHeight;
+        
+    }
+
     return(
             <div>
                 <div style={{
@@ -97,6 +106,7 @@ function Worksheet()
                                 width: '90%',
                                 height: '400px',
                             }}
+                            onPasteCapture={OnPasteEvent}
                         />
                         <br/>
                         <Button variant="success" style={{margin: '30px'}} onClick={GenerateOnClick}>Generate</Button>
