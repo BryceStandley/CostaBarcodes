@@ -114,8 +114,9 @@ function BarcodeGen()
                     textAlign: "center",
                     margin: '30px'
                 }}>
-                    <h1>General Barcode Creator</h1>
-                    <p>Generate a general barcode for any type of use. Select from the basic barcode type presets and options, enter the barcode data and press generate to create a printable PDF with the containing barcode</p>
+                    <h1>Lt. Barcode</h1>
+                    <p>Generate a general barcode for any type of use.</p>
+                    <p><strong>Options currently under construction.</strong></p>
                     <hr />
 
                     <Form noValidate validated={validated} onSubmit={handleSubmit} ref={formRef}>

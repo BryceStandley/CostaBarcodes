@@ -1,5 +1,5 @@
 import './Pallet-label.css';
-import React, {ReactNode, useRef, useState} from "react";
+import React, {ReactNode, useRef, useState, ClipboardEvent} from "react";
 import {Button} from "react-bootstrap";
 import Pallet from "../objects/palletLabel";
 import jsPDF from 'jspdf';
@@ -19,6 +19,7 @@ function PalletLabel()
     const [pallets, setPallets] = useState<Pallet[]>([])
     const pdfDoc = useRef<string>("");
     const [pdfViewer, setPdfViewer] = useState<ReactNode>([]);
+    const viewerHeightRef = useRef<number>(0);
 
     const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
@@ -33,7 +34,7 @@ function PalletLabel()
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         const pageWidthMargin = pageWidth - 30;
-
+        
         pallets?.forEach((value, i) => {
             let canvas = document.createElement('canvas');
             bwip.toCanvas(canvas, {
@@ -83,6 +84,8 @@ function PalletLabel()
             {
                 doc.addPage();
             }
+            viewerHeightRef.current += pageHeight;
+            //console.log(viewerHeightRef.current);
         })
 
         pdfDoc.current = doc.output("dataurlstring");
@@ -101,15 +104,15 @@ function PalletLabel()
 
     function CreateViewer()
     {
+        //console.log(window.innerHeight);
         return(
             <div>
                 <Button style={{margin: "30px"}} variant="danger" type="button" onClick={ResetOnClick}>Reset</Button>
                 <p>To rotate the page, use the PDF preview <em><strong>More Actions</strong></em> button on the right</p>
-                <Worker workerUrl={process.env.PUBLIC_URL +"/assets/js/pdf.worker.js"}>
-                    <div style={{height: '750px'}}>
-                        <Viewer fileUrl={pdfDoc.current} defaultScale={1} plugins={[defaultLayoutPluginInstance,]}/>
-                    </div>
-                </Worker>
+                <div style={{width: '50%', height: '1000px', margin: '0 auto'}}>
+                    <Viewer fileUrl={pdfDoc.current} defaultScale={1} plugins={[defaultLayoutPluginInstance,]}/>
+                </div>
+            
             </div>
         );
     }
@@ -155,6 +158,22 @@ function PalletLabel()
         inputRef.current.removeAttribute("hidden");
     }
 
+    const OnPasteEvent = (e :ClipboardEvent<HTMLTextAreaElement>) => {
+        e.preventDefault();
+        let paste = e.clipboardData.getData('text');
+        inputRef.current.value += paste;
+        inputRef.current.value += "\n";
+        inputRef.current.scrollTop = inputRef.current.scrollHeight;
+        
+    }
+
+    function SetPDFViewerHeight()
+    {
+        var d = document.getElementById('viewerDiv');
+        d?.style.setProperty('height', Math.ceil(viewerHeightRef.current).toString() +'px');
+        return(<div></div>);
+    }
+
 
         return(
             <div>
@@ -164,21 +183,28 @@ function PalletLabel()
                 }}>
                     <div>
                         <h1>Pallet Labels</h1>
-                        <p>Generate Case Number Labels by entering any amount of case numbers and pressing generate</p>
-                        <p>Strictly one case number per line</p>
-                            <textarea
-                                id="caseNumberInput"
-                                ref={inputRef}
-                                style={{
-                                    marginTop: '10px',
-                                    width: '90%',
-                                    height: '400px'
-                                }}
-                            />
-                            <br />
-                            <Button style={{margin: "30px"}} ref={generateBtnRef} variant="success" type="button" onClick={GenerateOnClick}>Generate</Button>
-                        <div hidden ref={viewerRef}>
-                            {pdfViewer}
+                        <hr />
+                        <p>Generate case number labels by entering any amount of case numbers and pressing generate.</p>
+                        <p>Strictly <em><strong>one</strong></em> case number per line.</p>
+                        <p>Each label is designed to be printed on a single page/label and scales the barcode content automatically to fit.</p>
+                        <p>Print via the PDF viewer print icon in the upper right corner of the viewer</p>
+                        <textarea
+                            id="caseNumberInput"
+                            ref={inputRef}
+                            style={{
+                                marginTop: '10px',
+                                width: '90%',
+                                height: '400px'
+                            }}
+                            onPasteCapture={OnPasteEvent}
+                        />
+                        <br />
+                        <Button style={{margin: "30px"}} ref={generateBtnRef} variant="success" type="button" onClick={GenerateOnClick}>Generate</Button>
+                    </div>
+                    <div hidden ref={viewerRef}>
+                        {pdfViewer}
+                        <div>
+                            {SetPDFViewerHeight()}
                         </div>
                     </div>
                 </div>
