@@ -13,7 +13,7 @@ import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
 function PalletLabel()
 {
-    const generateBtnRef = useRef<HTMLButtonElement>(null!);
+    const generateBtnRef = useRef<HTMLDivElement>(null!);
     const viewerRef = useRef<HTMLDivElement>(null!);
     const inputRef = useRef<HTMLTextAreaElement>(null!);
     const [pallets, setPallets] = useState<Pallet[]>([])
@@ -104,13 +104,12 @@ function PalletLabel()
 
     function CreateViewer()
     {
-        //console.log(window.innerHeight);
+        const doc = pdfDoc.current +"#zoom=50"
         return(
             <div>
                 <Button style={{margin: "30px"}} variant="danger" type="button" onClick={ResetOnClick}>Reset</Button>
-                <p>To rotate the page, use the PDF preview <em><strong>More Actions</strong></em> button on the right</p>
-                <div style={{width: '50%', height: '1000px', margin: '0 auto'}}>
-                    <Viewer fileUrl={pdfDoc.current} defaultScale={1} plugins={[defaultLayoutPluginInstance,]}/>
+                <div>
+                    <object data={doc} type="application/pdf" style={{width: '85%', height: '600px'}}>Error loading PDF</object>
                 </div>
             
             </div>
@@ -186,8 +185,6 @@ function PalletLabel()
                         <hr />
                         <p>Generate case number labels by entering any amount of case numbers and pressing generate.</p>
                         <p>Strictly <em><strong>one</strong></em> case number per line.</p>
-                        <p>Each label is designed to be printed on a single page/label and scales the barcode content automatically to fit.</p>
-                        <p>Print via the PDF viewer print icon in the upper right corner of the viewer</p>
                         <textarea
                             id="caseNumberInput"
                             ref={inputRef}
@@ -198,14 +195,12 @@ function PalletLabel()
                             }}
                             onPasteCapture={OnPasteEvent}
                         />
-                        <br />
-                        <Button style={{margin: "30px"}} ref={generateBtnRef} variant="success" type="button" onClick={GenerateOnClick}>Generate</Button>
+                        <div ref={generateBtnRef}>
+                            <Button style={{margin: "30px"}}  variant="success" type="button" onClick={GenerateOnClick}>Generate</Button>
+                        </div>
                     </div>
                     <div hidden ref={viewerRef}>
                         {pdfViewer}
-                        <div>
-                            {SetPDFViewerHeight()}
-                        </div>
                     </div>
                 </div>
             </div>

@@ -5,7 +5,7 @@ import React from "react";
 import Worksheet from "./pages/Worksheet";
 import PalletLabel from "./pages/Pallet-label";
 import Scale from "./pages/Scale";
-import Footer from "./components/footer"
+import LocationSign from './pages/LocationSign'
 import BarcodeGen from './pages/Barcode-Gen';
 import { Worker } from "@react-pdf-viewer/core";
 
@@ -38,6 +38,8 @@ function App() {
                                             <BarcodeGen />
                                         </Worker>
                                     }/>
+                                    <Route path="/location-sign" element={<LocationSign />} />
+                                    
                                     <Route path="/" element={<Navigate to="/worksheet" replace/>}/>
                                     <Route path="*" element={<Navigate to="/worksheet" replace/>}/>
                             </Routes>

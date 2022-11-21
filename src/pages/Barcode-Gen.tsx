@@ -94,16 +94,13 @@ function BarcodeGen()
 
     function LoadPDF()
     {
+        const doc = pdf.current +"#zoom=50";
         return (
             <div>
                 <Button variant={"danger"} onClick={ResetOnClick} style={{margin: "10px"}}>Reset</Button>
-                <p>To rotate the page, use the PDF preview <em><strong>More Actions</strong></em> button on the right</p>
-                <Worker workerUrl={process.env.PUBLIC_URL +"/assets/js/pdf.worker.js"}>
-                    <div style={{height: '750px'}}>
-                        <Viewer fileUrl={pdf.current} defaultScale={1} plugins={[defaultLayoutPluginInstance,]}/>
-                    </div>
-                </Worker>
-
+                <div>
+				    <object data={doc} type="application/pdf"  style={{width: '85%', height: '625px'}}>Error loading PDF</object>
+                </div>
             </div>
         );
     }

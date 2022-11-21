@@ -6,7 +6,7 @@ import ReactDOMServer from "react-dom/server";
 // @ts-ignore
 import Barcode from "react-barcode";
 // @ts-ignore
-import PrintJob from "print-job";
+import bwip from "bwip-js";
 
 import { Viewer } from "@react-pdf-viewer/core";
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
@@ -14,6 +14,7 @@ import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import jsPDF from "jspdf";
+import autoTable from 'jspdf-autotable'
 
 function Worksheet()
 {
@@ -57,9 +58,102 @@ function Worksheet()
             format: "a4"
         });
 
-        //...
-        var table = CreateSheetTable(shipmentManager.current.shipments);
-        doc.addHTML(ReactDOMServer.renderToString(table.children);
+        let totalPages = 1;
+        if(shipmentManager.current.shipments.length > 12)
+        {
+            totalPages = Math.ceil(shipmentManager.current.shipments.length / 12);
+        }
+        const pageW = doc.internal.pageSize.getWidth();
+        const pageH = doc.internal.pageSize.getHeight();
+        const ws = "Receival Worksheet";
+        const headerX = (pageW / 2) - (doc.getTextDimensions(ws).w / 2) - 20;
+        const headerY = doc.getTextDimensions(ws).h + 10;
+        const tableStart = headerY + 10;
+        let shipments = shipmentManager.current.shipments;
+        for(let i = 0; i < totalPages; i++)
+        {
+            const pageNum = "page: " + (i+1).toString() +" of " + totalPages.toString();
+            doc.setFontSize(10);
+            doc.text(pageNum, 10, headerY);
+
+            doc.setFontSize(22);
+            doc.text(ws, headerX, headerY);
+
+            let tempShipments: Shipment[] = [];
+            let tempCanvas: HTMLCanvasElement[] = [];
+            //..loop over shipments
+            if(shipments.length > 12)
+            {
+                let tableCols :[[string, string ,string]] = [['','','']];
+                for(let j = 0; j < 12; j++)
+                {
+                    
+                    let canvas = document.createElement('canvas');
+                        bwip.toCanvas(canvas, {
+                        bcid: "code128",
+                        text: shipments[j].shipmentNumber,
+                    });
+                    tempCanvas.push(canvas);
+                    tempShipments.push(shipments[j])
+                    tableCols.push(['', shipments[j].shipmentNumber, shipments[j].vendor]);
+                }
+                tableCols.splice(0, 1);
+                autoTable(doc, {
+                    head: [['Barcode', 'Shipment', 'Vendor']],
+                    body: tableCols,
+                    columnStyles: {0: {halign: 'center', minCellHeight: ((pageH/10) - 20), minCellWidth: ((pageW/3) - 20)}, 2: { cellWidth: 'auto'}},
+                    didDrawCell: (data) => {
+                        if(data.section === 'body' && data.column.index === 0 && data.row.index < 12)
+                        {
+                            const canvas = tempCanvas[data.row.index];
+                            doc.addImage(canvas.toDataURL('image/png'), 'image/png', data.cell.x + 10, data.cell.y + 5, data.cell.width - 20, data.cell.height - 10);
+                        }
+                    }
+                });
+                tempCanvas.length = 0;
+                tableCols.splice(0, tableCols.length);
+            }
+            else
+            {
+                let tableCols :[[string, string ,string]] = [['','','']];
+                for(let j = 0; j < shipments.length; j++)
+                {
+                    let canvas = document.createElement('canvas');
+                        bwip.toCanvas(canvas, {
+                        bcid: "code128",
+                        text: shipments[j].shipmentNumber,
+                    });
+                    tempCanvas.push(canvas);
+                    tableCols.push(['', shipments[j].shipmentNumber, shipments[j].vendor]);
+                }
+
+                tableCols.splice(0, 1);
+                autoTable(doc, {
+                    head: [['Barcode', 'Shipment', 'Vendor']],
+                    body: tableCols,
+                    columnStyles: {0: {halign: 'center', minCellHeight: ((pageH/10) - 20), minCellWidth: ((pageW/3) - 20)}, 2: { cellWidth: 'auto'}},
+                    didDrawCell: (data) => {
+                        if(data.section === 'body' && data.column.index === 0 && data.row.index < 12)
+                        {
+                            const canvas = tempCanvas[data.row.index];
+                            doc.addImage(canvas.toDataURL('image/png'), 'image/png', data.cell.x + 10, data.cell.y + 5, data.cell.width - 20, data.cell.height - 10);
+                        }
+                    }
+                });
+                tempCanvas.length = 0;
+                tableCols.splice(0, tableCols.length);
+            }
+
+            if(tempShipments.length > 0)
+            {
+                shipments = shipments.filter((x) => !tempShipments.includes(x));
+            }
+
+            if(i+1 < totalPages)
+            {
+                doc.addPage();
+            }
+        }
 
         pdfDoc.current = doc.output("dataurlstring");
         DisplayPage();
@@ -76,19 +170,15 @@ function Worksheet()
     }
 
 
-    function PrintPage()
-    {
-        PrintJob.print("#content");
-    }
-
     function CreateViewer()
     {
+        const doc = pdfDoc.current +"#zoom=100";
+
         return(
             <div>
                 <Button style={{margin: "30px"}} variant="danger" type="button" onClick={ResetInputs}>Reset</Button>
-                <p>To rotate the page, use the PDF preview <em><strong>More Actions</strong></em> button on the right</p>
-                <div style={{width: '50%', height: '1000px', margin: '0 auto'}}>
-                    <Viewer fileUrl={pdfDoc.current} defaultScale={1} plugins={[defaultLayoutPluginInstance,]}/>
+                <div>
+                    <object data={doc} type="application/pdf" style={{width: '85%', height: '700px'}}>Error loading PDF</object>
                 </div>
 
             </div>
@@ -140,11 +230,8 @@ function Worksheet()
                     <div id="inputField" ref={inputDivRef}>
                         <h1>Receival Worksheet</h1>
                         <hr/>
-                        <p>Copy and paste shipment numbers and vendor names from WMS into the text box and hit generate
-                            to create a SCI like worksheet</p>
-                        <p>Strictly one Shipment per line in the format: <em><strong>"ShipmentNumber Vendor"</strong></em> OR <em><strong>"ShipmentNumber"</strong></em> </p>
-                        <p>The shipment and vendor details <em><strong>MUST</strong></em> be seperated by a space.
-                         If no vendor text is found, the shipment is generated with a empty vendor</p>
+                        <p>Generate a receival worksheet from copied shipment numbers and vender names from WMS</p>
+                        <p>Strictly <em><strong>ONE</strong></em> Shipment per line. The shipment number and vendor <em><strong>MUST</strong></em> be separated by a space.</p>
 
                         <textarea
                             name="mainInput"

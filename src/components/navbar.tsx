@@ -6,10 +6,11 @@ import { faLiraSign, fas } from '@fortawesome/free-solid-svg-icons'
 import { Link } from 'react-router-dom';
 import React from "react";
 
-import { faHome, faFileAlt, faSignOutAlt, faSignInAlt, faLightbulb, faUser, faBarcode } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faFileAlt, faSignOutAlt, faSignInAlt, faLightbulb, faUser, faBarcode, faSignsPost } from '@fortawesome/free-solid-svg-icons';
+import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-library.add(faHome, faFileAlt, faSignInAlt, faSignOutAlt, faLightbulb, faUser, faBarcode);
+library.add(faHome, faFileAlt, faSignInAlt, faSignOutAlt, faLightbulb, faUser, faBarcode, faSignsPost, faGithub);
 
 function NavigationBar() {
     return (
@@ -21,11 +22,12 @@ function NavigationBar() {
                 </Link>
                 <hr />
                 <ul className='nav nav-pills flex-column mb-auto'>
-                    <span>
+                    <span className='nav-title'>
                         <FontAwesomeIcon icon={faSignInAlt} style={{paddingRight: '10px'}}/>
-                        Inbound
-                        <hr className='nav-title-separator' />
+                        <strong>Inbound</strong>    
                     </span>
+                    
+                    <hr className='nav-title-separator' />
 
                     <li className='nav-item' >
                         <Link className='nav-link text-white' to='/worksheet'>
@@ -42,24 +44,26 @@ function NavigationBar() {
 
                     <hr />
 
-                    <span>
+                    <span className='nav-title'>
                         <FontAwesomeIcon icon={faSignOutAlt} style={{paddingRight: '10px'}}/>
-                        Outbound
-                        <hr className='nav-title-separator' />
+                        <strong>Outbound</strong>
                     </span>
-                    <li>
-                        <span>
-                            empty
-                        </span>
+                    <hr className='nav-title-separator' />
+                    <li className='nav-item' >
+                        <Link className='nav-link text-white' to='/location-sign'>
+                            <FontAwesomeIcon icon={faSignsPost} style={{paddingRight: '10px'}}/>
+                            Location Sign
+                        </Link>
                     </li>
 
                     <hr />
 
-                    <span>
+                    <span className='nav-title'>
                         <FontAwesomeIcon icon={faLightbulb} style={{paddingRight: '10px'}} />
-                        Misc
-                        <hr className='nav-title-separator' />
+                        <strong>Misc</strong>
                     </span>
+                    <hr className='nav-title-separator' />
+
                     <li className='nav-item'>
                         <Link className='nav-link text-white' to='/scale-login'>
                             <FontAwesomeIcon icon={faUser} style={{paddingRight: '10px'}}/>
@@ -75,7 +79,11 @@ function NavigationBar() {
                 </ul>
             <hr />
                 <div className='d-flex align-items-center text-white text-decoration-non' style={{position: 'relative'}}>
-                    <strong>&copy; 2022 - Bryce Standley</strong>
+                    <strong>&copy; 2022 - Bryce Standley
+                    <a className='nav-link text-white d-inline' href='https://github.com/BryceStandley' target="_blank" rel="noopener noreferrer">
+                        <FontAwesomeIcon icon={faGithub} style={{paddingLeft: '10px'}} />
+                    </a>
+                    </strong>
                 </div>
             </div>
     );

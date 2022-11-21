@@ -107,13 +107,12 @@ function Scale()
 
     function GenerateViewer()
     {
-        return(
-            <Worker workerUrl={process.env.PUBLIC_URL +"/assets/js/pdf.worker.js"}>
-                <div style={{height: '750px'}}>
-                    <Viewer fileUrl={generatedPDFRef.current} defaultScale={1} plugins={[defaultLayoutPluginInstance,]}/>
-                </div>
-            </Worker>
-        );
+        const doc = generatedPDFRef.current +"#zoom=100"
+		return(
+			<div>
+				<object data={doc} type="application/pdf"  style={{width: '85%', height: '500px'}}>Error loading PDF</object>
+			</div>
+		);
     }
 
     function ResetOnClick()
@@ -161,6 +160,7 @@ function Scale()
                                             <InputGroup.Text id="ig-password">Password</InputGroup.Text>
                                             <Input id="passwordInput" name="passwordInput" innerRef={passwordRef} required={true} type="text" />
                                         </InputGroup>
+                                        <Form.Control.Feedback type="invalid"/>
                                     </div>
                                 </FormGroup>
 

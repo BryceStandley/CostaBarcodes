@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.2.0",
+    "@fortawesome/free-brands-svg-icons": "^6.2.1",
     "@fortawesome/free-regular-svg-icons": "^6.2.1",
     "@fortawesome/free-solid-svg-icons": "^6.2.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
@@ -25,6 +26,7 @@
     "html2canvas": "^1.4.1",
     "jsbarcode": "^3.11.5",
     "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.5.25",
     "pdfjs-dist": "^2.15.349",
     "print-job": "^2.1.2",
     "print-js": "^1.6.0",
