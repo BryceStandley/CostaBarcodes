@@ -65,6 +65,7 @@ body {
 li.nav-item:hover {
   color: rgba(0, 0, 0, .85);
   background-color: #073B4C;
+  border-radius: 25px;
 }
 
 .nav-title-separator {
@@ -75,7 +76,11 @@ li.nav-item:hover {
 }
 
 .nav-title {
-  
+  /*text-align: left;
+  padding-left: 20px;*/
+  font-size: larger;
+  border-radius: 15px;
+  background: linear-gradient(35deg,#073b4c, #ef476f);
 }
 
 .mainContent {

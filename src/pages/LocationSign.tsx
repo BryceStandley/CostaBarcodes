@@ -1,4 +1,4 @@
-import React, {useRef, useState, ReactNode, ClipboardEvent} from "react";
+import React, {useRef, useState, ReactNode} from "react";
 import { Button, InputGroup, FormGroup, Form} from "react-bootstrap";
 import {Input} from "reactstrap";
 
@@ -10,7 +10,6 @@ function LocationSign()
 {
 
 	const inputRef = useRef<HTMLDivElement>(null!);
-	const genBtnRef = useRef<HTMLDivElement>(null!);
 	const resetBtnRef = useRef<HTMLDivElement>(null!);
 	const viewerRef = useRef<HTMLDivElement>(null!);
     const pdfDoc = useRef<string>("");
@@ -22,7 +21,6 @@ function LocationSign()
 	const [validated, setValidated] = useState<boolean>(false);
 
 	const handleSubmit = (e) => {
-        const form = e.currentTarget;
         e.preventDefault();
         e.stopPropagation();
 

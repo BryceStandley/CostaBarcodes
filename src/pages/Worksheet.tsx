@@ -1,33 +1,22 @@
-import React, {useRef, useState, ReactNode, ClipboardEvent} from "react";
-import Button from "react-bootstrap/Button";
+import React, {useRef, useState, ReactNode, ClipboardEvent,} from "react";
+import { Button, Form } from "react-bootstrap";
 import {ShipmentManager, Shipment} from "../objects/shipment";
-import Table from "react-bootstrap/Table";
-import ReactDOMServer from "react-dom/server";
-// @ts-ignore
-import Barcode from "react-barcode";
 // @ts-ignore
 import bwip from "bwip-js";
-
-import { Viewer } from "@react-pdf-viewer/core";
-import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import jsPDF from "jspdf";
 import autoTable from 'jspdf-autotable'
+
+const pdfLoading = process.env.PUBLIC_URL + "/assets/img/pdf_loading.gif";
 
 function Worksheet()
 {
     const shipmentManager = useRef<ShipmentManager>(new ShipmentManager());
-    const [contentRender, setContentRender] = useState<ReactNode>();
     const viewerRef = useRef<HTMLDivElement>(null!);
     const pdfDoc = useRef<string>("");
     const [pdfViewer, setPdfViewer] = useState<ReactNode>([]);
-    const defaultLayoutPluginInstance = defaultLayoutPlugin();
     const inputRef = useRef<HTMLTextAreaElement>(null!);
     const inputDivRef = useRef<HTMLDivElement>(null!);
     const genBtnRef = useRef<HTMLButtonElement>(null!);
-    const contentDivRef = useRef<HTMLDivElement>(null!);
 
     function ResetInputs()
     {
@@ -41,13 +30,27 @@ function Worksheet()
 
     function GenerateOnClick()
     {
-        if(inputRef.current.value === "" ) return;
+        if(inputRef.current.value === "" ){
+            setPdfViewer(null);
+            inputDivRef.current.removeAttribute("hidden");
+            viewerRef.current.setAttribute("hidden","");
+            return;
+        }
 
         shipmentManager.current.Populate(inputRef.current.value);
 
         GeneratePage();
         inputRef.current.value = "";
         inputDivRef.current.setAttribute("hidden", "");
+    }
+
+    function ShowLoading()
+    {
+        return(
+            <div>
+                <img src={pdfLoading} alt="loading"/>
+            </div>
+        );
     }
 
     function GeneratePage()
@@ -68,7 +71,7 @@ function Worksheet()
         const ws = "Receival Worksheet";
         const headerX = (pageW / 2) - (doc.getTextDimensions(ws).w / 2) - 20;
         const headerY = doc.getTextDimensions(ws).h + 10;
-        const tableStart = headerY + 10;
+        //const tableStart = headerY + 10;
         let shipments = shipmentManager.current.shipments;
         for(let i = 0; i < totalPages; i++)
         {
@@ -84,8 +87,14 @@ function Worksheet()
             //..loop over shipments
             if(shipments.length > 12)
             {
-                let tableCols :[[string, string ,string]] = [['','','']];
-                for(let j = 0; j < 12; j++)
+                let canvas = document.createElement('canvas');
+                        bwip.toCanvas(canvas, {
+                        bcid: "code128",
+                        text: shipments[0].shipmentNumber,
+                    });
+                    tempCanvas.push(canvas);
+                let tableCols :[[string, string ,string]] = [['', shipments[0].shipmentNumber, shipments[0].vendor]];
+                for(let j = 1; j < 12; j++)
                 {
                     
                     let canvas = document.createElement('canvas');
@@ -97,7 +106,7 @@ function Worksheet()
                     tempShipments.push(shipments[j])
                     tableCols.push(['', shipments[j].shipmentNumber, shipments[j].vendor]);
                 }
-                tableCols.splice(0, 1);
+                
                 autoTable(doc, {
                     head: [['Barcode', 'Shipment', 'Vendor']],
                     body: tableCols,
@@ -110,13 +119,20 @@ function Worksheet()
                         }
                     }
                 });
+
                 tempCanvas.length = 0;
                 tableCols.splice(0, tableCols.length);
             }
             else
             {
-                let tableCols :[[string, string ,string]] = [['','','']];
-                for(let j = 0; j < shipments.length; j++)
+                let canvas = document.createElement('canvas');
+                        bwip.toCanvas(canvas, {
+                        bcid: "code128",
+                        text: shipments[0].shipmentNumber,
+                    });
+                    tempCanvas.push(canvas)
+                let tableCols :[[string, string ,string]] = [['', shipments[0].shipmentNumber, shipments[0].vendor]];
+                for(let j = 1; j < shipments.length; j++)
                 {
                     let canvas = document.createElement('canvas');
                         bwip.toCanvas(canvas, {
@@ -127,7 +143,6 @@ function Worksheet()
                     tableCols.push(['', shipments[j].shipmentNumber, shipments[j].vendor]);
                 }
 
-                tableCols.splice(0, 1);
                 autoTable(doc, {
                     head: [['Barcode', 'Shipment', 'Vendor']],
                     body: tableCols,
@@ -185,33 +200,6 @@ function Worksheet()
         );
     }
 
-    function CreateSheetTable(shipments: Shipment[]): ReactNode
-    {
-        return(
-            <Table bordered key={Math.random()} id="mainTable">
-                <thead>
-                <tr>
-                    <th>Barcode</th>
-                    <th>Shipment</th>
-                    <th>Vendor</th>
-                </tr>
-                </thead>
-                <tbody>
-                {
-                    shipments.map((value, key) => {
-                        return(
-                            <tr key={key}>
-                                <td><Barcode value={value.shipmentNumber} height={50} renderer="img"/></td>
-                                <td>{value.shipmentNumber}</td>
-                                <td>{value.vendor}</td>
-                            </tr>
-                        )})
-                }
-                </tbody>
-            </Table>
-        );
-    }
-
     const OnPasteEvent = (e :ClipboardEvent<HTMLTextAreaElement>) => {
         e.preventDefault();
         let paste = e.clipboardData.getData('text');
@@ -220,6 +208,17 @@ function Worksheet()
         inputRef.current.scrollTop = inputRef.current.scrollHeight;
         
     }
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        inputDivRef.current.setAttribute("hidden", "");
+        viewerRef.current.removeAttribute("hidden");
+        setPdfViewer(ShowLoading());
+        GenerateOnClick();
+    }
+
+
 
     return(
             <div>
@@ -233,6 +232,7 @@ function Worksheet()
                         <p>Generate a receival worksheet from copied shipment numbers and vender names from WMS</p>
                         <p>Strictly <em><strong>ONE</strong></em> Shipment per line. The shipment number and vendor <em><strong>MUST</strong></em> be separated by a space.</p>
 
+                    <Form onSubmit={handleSubmit}>
                         <textarea
                             name="mainInput"
                             id="mainInput"
@@ -245,7 +245,8 @@ function Worksheet()
                             onPasteCapture={OnPasteEvent}
                         />
                         <br/>
-                        <Button variant="success" style={{margin: '30px'}} ref={genBtnRef} onClick={GenerateOnClick}>Generate</Button>
+                        <Button variant="success" style={{margin: '30px'}} ref={genBtnRef} type="submit">Generate</Button>
+                    </Form>
                     </div>
                     <div hidden ref={viewerRef}>
                         <h1>Receival Worksheet</h1>

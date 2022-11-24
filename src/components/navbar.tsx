@@ -1,8 +1,4 @@
-import Container from 'react-bootstrap/Container';
-import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar';
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faLiraSign, fas } from '@fortawesome/free-solid-svg-icons'
 import { Link } from 'react-router-dom';
 import React from "react";
 
@@ -87,27 +83,6 @@ function NavigationBar() {
                 </div>
             </div>
     );
-}
-
-function SetupNavClasses()
-{
-    
-
-    for(var i = 0; i < 1; i++)
-    {
-        var navLink = document.getElementById('navLink'+i);
-        if(navLink != null)
-        {
-            navLink.classList.add('nav-link text-white');
-        }
-    }
-
-    var footerText = document.getElementById('footerText');
-    if(footerText != null)
-    {
-        footerText.classList.add('d-flex align-items-center text-white text-decoration-non');
-    }
-
 }
 
 export default NavigationBar;

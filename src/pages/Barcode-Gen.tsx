@@ -1,18 +1,10 @@
 
 import React, {ReactNode, useState, useRef} from "react";
-import {Button, Form, FormGroup, InputGroup, Row, Col, FloatingLabel} from "react-bootstrap";
-import {library} from "@fortawesome/fontawesome-svg-core";
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faHeartCrack} from "@fortawesome/free-solid-svg-icons";
+import {Button, Form, FormGroup, InputGroup} from "react-bootstrap";
 import {Input} from "reactstrap";
 
 import jsPDF from "jspdf";
 import bwip from "bwip-js";
-import { Viewer, Worker } from "@react-pdf-viewer/core";
-import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
 
 function BarcodeGen()
@@ -23,7 +15,6 @@ function BarcodeGen()
     const [viewerContent, setViewerContent] = useState<ReactNode>([]);
     const viewer = useRef<HTMLDivElement>(null!);
     const pdf = useRef<string>("");
-    const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
     const handleSubmit = (e) => {
         e.preventDefault();

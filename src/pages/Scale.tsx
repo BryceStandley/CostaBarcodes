@@ -6,12 +6,6 @@ import ScaleUser from "../objects/scaleUser";
 // @ts-ignore
 import bwip from "bwip-js";
 
-import { Viewer, Worker } from "@react-pdf-viewer/core";
-import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import '@react-pdf-viewer/default-layout/lib/styles/index.css';
-
 
 function Scale()
 {
@@ -25,10 +19,7 @@ function Scale()
     const [viewer, setViewer] = useState<ReactNode>([])
     const [validated, setValidated] = useState<boolean>(false);
 
-    const defaultLayoutPluginInstance = defaultLayoutPlugin();
-
     const handleSubmit = (e) => {
-        const form = e.currentTarget;
         e.preventDefault();
         e.stopPropagation();
 

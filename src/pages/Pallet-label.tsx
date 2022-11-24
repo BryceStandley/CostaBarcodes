@@ -5,11 +5,6 @@ import Pallet from "../objects/palletLabel";
 import jsPDF from 'jspdf';
 // @ts-ignore
 import bwip from 'bwip-js';
-import { Viewer, Worker } from "@react-pdf-viewer/core";
-import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
 function PalletLabel()
 {
@@ -20,8 +15,6 @@ function PalletLabel()
     const pdfDoc = useRef<string>("");
     const [pdfViewer, setPdfViewer] = useState<ReactNode>([]);
     const viewerHeightRef = useRef<number>(0);
-
-    const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
     function GeneratePage()
     {
@@ -67,7 +60,7 @@ function PalletLabel()
             let fontSize = 28;
             if(doc.getTextDimensions(value.caseNumber, {fontSize: 28}).w > pageWidth)
             {
-                const unit = doc.getStringUnitWidth(value.caseNumber);
+                //const unit = doc.getStringUnitWidth(value.caseNumber);
                 fontSize *= ((barcodeW) / doc.getTextDimensions(value.caseNumber, {fontSize: 28}).w);
                 //console.log(fontSize);
             }
@@ -164,13 +157,6 @@ function PalletLabel()
         inputRef.current.value += "\n";
         inputRef.current.scrollTop = inputRef.current.scrollHeight;
         
-    }
-
-    function SetPDFViewerHeight()
-    {
-        var d = document.getElementById('viewerDiv');
-        d?.style.setProperty('height', Math.ceil(viewerHeightRef.current).toString() +'px');
-        return(<div></div>);
     }
 
 
