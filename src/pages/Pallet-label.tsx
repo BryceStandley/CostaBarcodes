@@ -2,6 +2,7 @@ import './Pallet-label.css';
 import React, {ReactNode, useRef, useState, ClipboardEvent} from "react";
 import {Button} from "react-bootstrap";
 import Pallet from "../objects/palletLabel";
+import { Utils } from 'Utils';
 import jsPDF from 'jspdf';
 // @ts-ignore
 import bwip from 'bwip-js';
@@ -60,14 +61,10 @@ function PalletLabel()
             let fontSize = 28;
             if(doc.getTextDimensions(value.caseNumber, {fontSize: 28}).w > pageWidth)
             {
-                //const unit = doc.getStringUnitWidth(value.caseNumber);
                 fontSize *= ((barcodeW) / doc.getTextDimensions(value.caseNumber, {fontSize: 28}).w);
-                //console.log(fontSize);
             }
 
             doc.setFontSize(fontSize);
-            //console.log(doc.getFontSize());
-
 
             doc.text(value.caseNumber,
                 ((pageWidth/2) - (doc.getTextDimensions(value.caseNumber).w / 2)),
@@ -78,7 +75,6 @@ function PalletLabel()
                 doc.addPage();
             }
             viewerHeightRef.current += pageHeight;
-            //console.log(viewerHeightRef.current);
         })
 
         pdfDoc.current = doc.output("dataurlstring");
@@ -97,12 +93,13 @@ function PalletLabel()
 
     function CreateViewer()
     {
-        const doc = pdfDoc.current +"#zoom=50"
+        const blob = new Blob([Utils.Base64ToBlob(pdfDoc.current)], { type: 'application/pdf' });
+        const fileURL = URL.createObjectURL(blob);
         return(
             <div>
                 <Button style={{margin: "30px"}} variant="danger" type="button" onClick={ResetOnClick}>Reset</Button>
                 <div>
-                    <object data={doc} type="application/pdf" style={{width: '85%', height: '600px'}}>Error loading PDF</object>
+                    <embed src={fileURL} type="application/pdf" style={{width: '85%', height: '600px'}}/>
                 </div>
             
             </div>

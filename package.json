@@ -1,6 +1,6 @@
 {
   "name": "costa",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.2.0",
@@ -21,6 +21,7 @@
     "@zxing/library": "^0.19.1",
     "bootstrap": "^5.2.0",
     "bwip-js": "^3.1.0",
+    "express": "^4.18.2",
     "fontawesome": "^5.6.3",
     "html-to-image": "^1.10.8",
     "html2canvas": "^1.4.1",
@@ -28,6 +29,8 @@
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.25",
     "pdfjs-dist": "^2.15.349",
+    "pdfkit": "^0.13.0",
+    "pdfkit-table": "^0.1.99",
     "print-job": "^2.1.2",
     "print-js": "^1.6.0",
     "print.js": "^1.0.18",
@@ -74,5 +77,6 @@
   },
   "devDependencies": {
     "terser-brunch": "^4.1.0"
-  }
+  },
+  "proxy": "http://localhost:5000"
 }

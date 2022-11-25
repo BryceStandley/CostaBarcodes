@@ -1,15 +1,17 @@
 import React, {useRef, useState, ReactNode, ClipboardEvent,} from "react";
-import { Button, Form } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import {ShipmentManager, Shipment} from "../objects/shipment";
 // @ts-ignore
 import bwip from "bwip-js";
 import jsPDF from "jspdf";
 import autoTable from 'jspdf-autotable'
+import { Utils } from 'Utils';
 
-const pdfLoading = process.env.PUBLIC_URL + "/assets/img/pdf_loading.gif";
 
 function Worksheet()
 {
+    const pdfLoading = process.env.PUBLIC_URL + "/assets/img/pdf_loading.gif";
+
     const shipmentManager = useRef<ShipmentManager>(new ShipmentManager());
     const viewerRef = useRef<HTMLDivElement>(null!);
     const pdfDoc = useRef<string>("");
@@ -43,6 +45,7 @@ function Worksheet()
         inputRef.current.value = "";
         inputDivRef.current.setAttribute("hidden", "");
     }
+
 
     function ShowLoading()
     {
@@ -177,9 +180,7 @@ function Worksheet()
     function DisplayPage()
     {
         if(pdfDoc.current === "") return;
-
         viewerRef.current.removeAttribute("hidden");
-
         setPdfViewer(CreateViewer());
 
     }
@@ -187,21 +188,24 @@ function Worksheet()
 
     function CreateViewer()
     {
-        const doc = pdfDoc.current +"#zoom=100";
-
+        const blob = new Blob([Utils.Base64ToBlob(pdfDoc.current)], { type: 'application/pdf' });
+        const fileURL = URL.createObjectURL(blob);
+    
         return(
             <div>
                 <Button style={{margin: "30px"}} variant="danger" type="button" onClick={ResetInputs}>Reset</Button>
                 <div>
-                    <object data={doc} type="application/pdf" style={{width: '85%', height: '700px'}}>Error loading PDF</object>
+                <embed src={fileURL} type="application/pdf" style={{width: '85%', height: '700px'}}/>
                 </div>
-
             </div>
         );
     }
 
+    
+    
+
     const OnPasteEvent = (e :ClipboardEvent<HTMLTextAreaElement>) => {
-        e.preventDefault();
+        //e.preventDefault();
         let paste = e.clipboardData.getData('text');
         inputRef.current.value += paste;
         inputRef.current.value += "\n";
@@ -232,7 +236,6 @@ function Worksheet()
                         <p>Generate a receival worksheet from copied shipment numbers and vender names from WMS</p>
                         <p>Strictly <em><strong>ONE</strong></em> Shipment per line. The shipment number and vendor <em><strong>MUST</strong></em> be separated by a space.</p>
 
-                    <Form onSubmit={handleSubmit}>
                         <textarea
                             name="mainInput"
                             id="mainInput"
@@ -245,8 +248,7 @@ function Worksheet()
                             onPasteCapture={OnPasteEvent}
                         />
                         <br/>
-                        <Button variant="success" style={{margin: '30px'}} ref={genBtnRef} type="submit">Generate</Button>
-                    </Form>
+                        <Button variant="success" style={{margin: '30px'}} ref={genBtnRef} onClick={handleSubmit} type="submit">Generate</Button>
                     </div>
                     <div hidden ref={viewerRef}>
                         <h1>Receival Worksheet</h1>

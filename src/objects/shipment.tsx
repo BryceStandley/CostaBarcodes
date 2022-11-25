@@ -117,6 +117,11 @@ class ShipmentManager {
 
     }
 
+    GetJSON()
+    {
+        return JSON.stringify(this.shipments);
+    }
+
 
     Get()
     {
