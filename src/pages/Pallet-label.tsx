@@ -1,4 +1,3 @@
-import './Pallet-label.css';
 import React, {ReactNode, useRef, useState, ClipboardEvent} from "react";
 import {Button} from "react-bootstrap";
 import Pallet from "../objects/palletLabel";

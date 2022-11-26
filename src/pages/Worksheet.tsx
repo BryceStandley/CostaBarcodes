@@ -74,13 +74,12 @@ function Worksheet()
         const ws = "Receival Worksheet";
         const headerX = (pageW / 2) - (doc.getTextDimensions(ws).w / 2) - 20;
         const headerY = doc.getTextDimensions(ws).h + 10;
-        //const tableStart = headerY + 10;
         let shipments = shipmentManager.current.shipments;
         for(let i = 0; i < totalPages; i++)
         {
             const pageNum = "page: " + (i+1).toString() +" of " + totalPages.toString();
             doc.setFontSize(10);
-            doc.text(pageNum, 10, headerY);
+            doc.text(pageNum, 20, headerY);
 
             doc.setFontSize(22);
             doc.text(ws, headerX, headerY);
@@ -113,6 +112,7 @@ function Worksheet()
                 autoTable(doc, {
                     head: [['Barcode', 'Shipment', 'Vendor']],
                     body: tableCols,
+                    theme: 'grid',
                     columnStyles: {0: {halign: 'center', minCellHeight: ((pageH/10) - 20), minCellWidth: ((pageW/3) - 20)}, 2: { cellWidth: 'auto'}},
                     didDrawCell: (data) => {
                         if(data.section === 'body' && data.column.index === 0 && data.row.index < 12)
@@ -149,6 +149,7 @@ function Worksheet()
                 autoTable(doc, {
                     head: [['Barcode', 'Shipment', 'Vendor']],
                     body: tableCols,
+                    theme: 'grid',
                     columnStyles: {0: {halign: 'center', minCellHeight: ((pageH/10) - 20), minCellWidth: ((pageW/3) - 20)}, 2: { cellWidth: 'auto'}},
                     didDrawCell: (data) => {
                         if(data.section === 'body' && data.column.index === 0 && data.row.index < 12)
@@ -205,7 +206,7 @@ function Worksheet()
     
 
     const OnPasteEvent = (e :ClipboardEvent<HTMLTextAreaElement>) => {
-        //e.preventDefault();
+        e.preventDefault();
         let paste = e.clipboardData.getData('text');
         inputRef.current.value += paste;
         inputRef.current.value += "\n";

@@ -12,7 +12,7 @@ RUN npm run build
 
 ENV NODE_ENV=production
 
-EXPOSE 3000
+EXPOSE 9900
 
 # start app
-CMD ["npx", "serve", "build"]
+CMD ["node", "./build/server.js"]
