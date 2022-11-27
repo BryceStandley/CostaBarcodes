@@ -1,6 +1,6 @@
 import React, {useRef, useState, ReactNode, ClipboardEvent,} from "react";
 import { Button } from "react-bootstrap";
-import {ShipmentManager, Shipment} from "../objects/shipment";
+import {ShipmentManager} from "../objects/shipment";
 // @ts-ignore
 import bwip from "bwip-js";
 import jsPDF from "jspdf";
@@ -75,98 +75,47 @@ function Worksheet()
         const headerX = (pageW / 2) - (doc.getTextDimensions(ws).w / 2) - 20;
         const headerY = doc.getTextDimensions(ws).h + 10;
         let shipments = shipmentManager.current.shipments;
+
+
+        let tempCanvas: HTMLCanvasElement[] = [];
+        let tableCols :Array<Array<string>> = [];
+        for(let j = 0; j < shipments.length; j++)
+        {
+            let canvas = document.createElement('canvas');
+                bwip.toCanvas(canvas, {
+                bcid: "code128",
+                text: shipments[j].shipmentNumber,
+            });
+            tempCanvas.push(canvas);
+            tableCols.push(['', shipments[j].shipmentNumber, shipments[j].vendor]);
+        }
+
         for(let i = 0; i < totalPages; i++)
         {
             const pageNum = "page: " + (i+1).toString() +" of " + totalPages.toString();
             doc.setFontSize(10);
             doc.text(pageNum, 20, headerY);
-
             doc.setFontSize(22);
             doc.text(ws, headerX, headerY);
 
-            let tempShipments: Shipment[] = [];
-            let tempCanvas: HTMLCanvasElement[] = [];
-            //..loop over shipments
-            if(shipments.length > 12)
-            {
-                let canvas = document.createElement('canvas');
-                        bwip.toCanvas(canvas, {
-                        bcid: "code128",
-                        text: shipments[0].shipmentNumber,
-                    });
-                    tempCanvas.push(canvas);
-                let tableCols :[[string, string ,string]] = [['', shipments[0].shipmentNumber, shipments[0].vendor]];
-                for(let j = 1; j < 12; j++)
-                {
-                    
-                    let canvas = document.createElement('canvas');
-                        bwip.toCanvas(canvas, {
-                        bcid: "code128",
-                        text: shipments[j].shipmentNumber,
-                    });
-                    tempCanvas.push(canvas);
-                    tempShipments.push(shipments[j])
-                    tableCols.push(['', shipments[j].shipmentNumber, shipments[j].vendor]);
-                }
-                
-                autoTable(doc, {
-                    head: [['Barcode', 'Shipment', 'Vendor']],
-                    body: tableCols,
-                    theme: 'grid',
-                    columnStyles: {0: {halign: 'center', minCellHeight: ((pageH/10) - 20), minCellWidth: ((pageW/3) - 20)}, 2: { cellWidth: 'auto'}},
-                    didDrawCell: (data) => {
-                        if(data.section === 'body' && data.column.index === 0 && data.row.index < 12)
+
+            autoTable(doc, {
+                head: [['Barcode', 'Shipment', 'Vendor']],
+                body: tableCols.slice( i * 12, 12 * (i+1)),
+                styles: {lineWidth: 1, lineColor: '#000000' },
+                theme: 'grid',
+                columnStyles: {0: {halign: 'center', minCellHeight: ((pageH/10) - 20), cellWidth: ((pageW/3) - 20)}, 2: { cellWidth: 'auto'}},
+                didDrawCell: (data) => {
+                    if(data.section === 'body' && data.column.index === 0)
+                    {
+                        const canvas = tempCanvas[data.row.index + (i * 12)];
+                        if(typeof canvas !== 'undefined')
                         {
-                            const canvas = tempCanvas[data.row.index];
                             doc.addImage(canvas.toDataURL('image/png'), 'image/png', data.cell.x + 10, data.cell.y + 5, data.cell.width - 20, data.cell.height - 10);
                         }
                     }
-                });
-
-                tempCanvas.length = 0;
-                tableCols.splice(0, tableCols.length);
-            }
-            else
-            {
-                let canvas = document.createElement('canvas');
-                        bwip.toCanvas(canvas, {
-                        bcid: "code128",
-                        text: shipments[0].shipmentNumber,
-                    });
-                    tempCanvas.push(canvas)
-                let tableCols :[[string, string ,string]] = [['', shipments[0].shipmentNumber, shipments[0].vendor]];
-                for(let j = 1; j < shipments.length; j++)
-                {
-                    let canvas = document.createElement('canvas');
-                        bwip.toCanvas(canvas, {
-                        bcid: "code128",
-                        text: shipments[j].shipmentNumber,
-                    });
-                    tempCanvas.push(canvas);
-                    tableCols.push(['', shipments[j].shipmentNumber, shipments[j].vendor]);
                 }
-
-                autoTable(doc, {
-                    head: [['Barcode', 'Shipment', 'Vendor']],
-                    body: tableCols,
-                    theme: 'grid',
-                    columnStyles: {0: {halign: 'center', minCellHeight: ((pageH/10) - 20), minCellWidth: ((pageW/3) - 20)}, 2: { cellWidth: 'auto'}},
-                    didDrawCell: (data) => {
-                        if(data.section === 'body' && data.column.index === 0 && data.row.index < 12)
-                        {
-                            const canvas = tempCanvas[data.row.index];
-                            doc.addImage(canvas.toDataURL('image/png'), 'image/png', data.cell.x + 10, data.cell.y + 5, data.cell.width - 20, data.cell.height - 10);
-                        }
-                    }
-                });
-                tempCanvas.length = 0;
-                tableCols.splice(0, tableCols.length);
-            }
-
-            if(tempShipments.length > 0)
-            {
-                shipments = shipments.filter((x) => !tempShipments.includes(x));
-            }
+            });
 
             if(i+1 < totalPages)
             {
