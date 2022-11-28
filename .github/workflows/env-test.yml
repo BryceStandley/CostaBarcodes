@@ -19,15 +19,16 @@ jobs:
         uses: actions/checkout@v3
 
       #Create a env file for github auth token
-      - run: |
-        touch .env
-        echo GITHUB_AUTH=${{ secrets.GITHUB_TOKEN }} >> .env
+      - name : Create env file
+        run: |
+          touch .env
+          echo GITHUB_AUTH=${{ secrets.GITHUB_TOKEN }} >> .env
 
-        echo "cat .env"
-        cat .env
+          echo "cat .env"
+          cat .env
 
-        echo "ls -a ."
-        ls -a .
+          echo "ls -a ."
+          ls -a .
 
-        echo "ls -a ${{ github.workspace }}"
-        ls -a ${{ github.workspace }}
+          echo "ls -a ${{ github.workspace }}"
+          ls -a ${{ github.workspace }}
