@@ -1,0 +1,44 @@
+name: ENV Test
+
+on:   
+  push:
+    # Publish `master` as Docker `latest` image.
+    branches:
+      - dev
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
+  # Run tests for any PRs.
+  pull_request:
+  
+  # Manual run
+  workflow_dispatch:
+
+jobs:
+  # Push image to GitHub Packages.
+  # See also https://docs.docker.com/docker-hub/builds/
+  name: Create and test ENV output
+  push:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Create env file
+        run: |
+        touch .env
+        echo GITHUB_AUTH=${{ secrets.GITHUB_TOKEN }} >> .env
+
+        echo "cat .env"
+        cat .env
+
+        echo "ls -a ."
+        ls -a .
+
+        echo "ls -a ${{ github.workspace }}"
+        ls -a ${{ github.workspace }}
