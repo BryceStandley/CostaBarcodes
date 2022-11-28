@@ -30,6 +30,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      #Create a env file for github auth token
       - name: Create env file
         run: |
         touch .env
