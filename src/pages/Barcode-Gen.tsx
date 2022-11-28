@@ -96,6 +96,8 @@ function BarcodeGen()
         );
     }
 
+    document.title = 'Costa Barcodes | Lt. Barcode';
+
         return(
             <div>
                 <div style={{
@@ -103,7 +105,7 @@ function BarcodeGen()
                     margin: '30px'
                 }}>
                     <h1>Lt. Barcode</h1>
-                    <p>Generate a general barcode for any type of use.</p>
+                    <p>Generate general use barcodes for any type of use.</p>
                     <p><strong>Options currently under construction.</strong></p>
                     <hr />
 

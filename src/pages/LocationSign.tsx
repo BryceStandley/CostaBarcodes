@@ -109,59 +109,60 @@ function LocationSign()
 		setValidated(false);
 	}
 
+	document.title = 'Costa Barcodes | Location Sign';
+
 	return(
 		<div>
-                <div style={{
-                    textAlign: 'center',
-                    margin: '30px'
-                }}>
-                    <div>
-                        <h1>Location Signage</h1>
-                        <hr/>
-                        <p>Generate a temporary location sign with barcode and product description. <strong>Description</strong> and <strong>SKU</strong> are optional</p>
+			<div style={{
+				textAlign: 'center',
+				margin: '30px'
+			}}>
+				<div>
+					<h1>Location Signage</h1>
+					<hr/>
+					<p>Generate a temporary location sign with barcode and product description. <strong>Description</strong> and <strong>SKU</strong> are optional</p>
+					<div ref={inputRef}>
+						<Form noValidate validated={validated} onSubmit={handleSubmit}>
+							<FormGroup>
+								<div style={{display: "flex", alignItems: "center", justifyContent: "center"}}>
+									<InputGroup style={{margin: '10px'}}>
+										<InputGroup.Text id="ig-location">Location</InputGroup.Text>
+										<Input id="locationInput" name="locationInput" innerRef={locationRef}  required={true} type="text"/>
+									</InputGroup>
+									<Form.Control.Feedback type="invalid"/>
 
-						<div ref={inputRef}>
-                            <Form noValidate validated={validated} onSubmit={handleSubmit}>
-                                <FormGroup>
-                                    <div style={{display: "flex", alignItems: "center", justifyContent: "center"}}>
-                                        <InputGroup style={{margin: '10px', width: '400px'}}>
-											<InputGroup.Text id="ig-location">Location</InputGroup.Text>
-											<Input id="locationInput" name="locationInput" innerRef={locationRef}  required={true} type="text"/>
-										</InputGroup>
-										<Form.Control.Feedback type="invalid"/>
+									<InputGroup style={{margin: '10px' }}>
+										<InputGroup.Text id="ig-description">Description</InputGroup.Text>
+										<Input id="descInput" name="descInput" innerRef={descRef} required={false} type="text" />
+									</InputGroup>
+									<Form.Control.Feedback type="invalid"/>
 
-                                        <InputGroup style={{margin: '10px', width: '400px'}}>
-											<InputGroup.Text id="ig-description">Description</InputGroup.Text>
-											<Input id="descInput" name="descInput" innerRef={descRef} required={false} type="text" />
-										</InputGroup>
-										<Form.Control.Feedback type="invalid"/>
+									<InputGroup style={{margin: '10px'}}>
+										<InputGroup.Text id="ig-sku">SKU</InputGroup.Text>
+										<Input id="skuInput" name="skuInput" innerRef={skuRef} required={false} type="text" />
+									</InputGroup>
+									<Form.Control.Feedback type="invalid"/>
+								</div>
+							</FormGroup>
 
-										<InputGroup style={{margin: '10px', width: '400px'}}>
-											<InputGroup.Text id="ig-sku">SKU</InputGroup.Text>
-											<Input id="skuInput" name="skuInput" innerRef={skuRef} required={false} type="text" />
-										</InputGroup>
-										<Form.Control.Feedback type="invalid"/>
-                                    </div>
-                                </FormGroup>
-
-                                <div style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center"
-                                }}>
-									<Button variant="success" style={{margin: '30px'}}  type="submit">Generate</Button>
-                                </div>
-                            </Form>
-							<br/>
-                    </div>
+							<div style={{
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center"
+							}}>
+								<Button variant="success" style={{margin: '30px'}}  type="submit">Generate</Button>
+							</div>
+						</Form>
+						<br/>
+					</div>
 					<div ref={resetBtnRef} hidden>
-                        	<Button variant="danger" style={{margin: '30px'}}  onClick={ResetOnClick}>Reset</Button>
-						</div>
-                    <div hidden ref={viewerRef}>
-                        {pdfViewer}
-                    </div>
-                </div>
-            </div>
+						<Button variant="danger" style={{margin: '30px'}}  onClick={ResetOnClick}>Reset</Button>
+					</div>
+					<div hidden ref={viewerRef}>
+						{pdfViewer}
+					</div>
+				</div>
+			</div>
 		</div>
 	);
 }

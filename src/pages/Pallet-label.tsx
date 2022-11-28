@@ -155,6 +155,7 @@ function PalletLabel()
         
     }
 
+    document.title = 'Costa Barcodes | Pallet Labels';
 
         return(
             <div>

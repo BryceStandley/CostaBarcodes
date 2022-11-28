@@ -7,6 +7,10 @@
   table-layout: fixed;
 }
 
+.commitText {
+  text-decoration-color: blue !important;
+}
+
 tr th {
   height: 50px;
 }
@@ -87,9 +91,11 @@ li.nav-item:hover {
   padding-left: 1rem;
   flex-grow: 1;
   flex-shrink: 0;
+  width: calc(100vw - 280px);
 }
 
 .mainPage {
   flex-grow: 1;
 }
+
 

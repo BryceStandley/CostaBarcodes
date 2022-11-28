@@ -173,6 +173,7 @@ function Worksheet()
     }
 
 
+    document.title = 'Costa Barcodes | Worksheet';
 
     return(
             <div>

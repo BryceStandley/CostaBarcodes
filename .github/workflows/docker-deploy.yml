@@ -22,6 +22,7 @@ env:
 jobs:
   # Push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
+  name: Build and Push Docker Image
   push:
     runs-on: ubuntu-latest
     permissions:
@@ -30,6 +31,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      #Create a env file for github auth token
+      - name : Create env file
+        run: |
+          touch .env
+          echo GITHUB_AUTH=${{ secrets.GITHUB_TOKEN }} >> .env
 
       - name: Build image
         run: docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
