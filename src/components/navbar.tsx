@@ -80,19 +80,19 @@ function NavigationBar()
                 <div className='d-flex align-items-center text-white' style={{position: 'relative', fontSize: 12, opacity: '0.5'}}>
                     <div className='flex-row' style={{width: '280px'}}>
                         <div className='flex-column'>
-                            Version -
+                            Version
                             <strong style={{paddingLeft: '20px'}}>
                                 {latestRepoStats.latestCommit?.Title}
                             </strong>
                         </div>
                         <div className='flex-column'>
-                                Updated -
+                                Updated
                                 <strong style={{paddingLeft: '22px'}}>
                                     {latestRepoStats.latestCommit?.Date}
                                 </strong>
                         </div>
                         <div className='flex-column'>
-                                Commit -
+                                Commit
                             <strong style={{paddingLeft: '32px'}}>
                                 <a className='nav-link d-inline' href={latestRepoStats.latestCommit?.URL} target="_blank" rel="noopener noreferrer" style={{color: '#06d6a0'}}>
                                     {"#" +latestRepoStats.latestCommit?.SHA}

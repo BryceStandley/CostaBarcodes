@@ -29,6 +29,11 @@ class RepoStats {
 				commit = {Date: date, Title: title, URL: url, SHA: sha};
 			}
 		}
+		else
+		{
+			commit = {Date: 'Unknown', Title: '0.0.0', URL: 'https://github.com/brycestandley/costabarcodes', SHA: 'NONE'}
+		}
+		
 		return commit;
 	}
 

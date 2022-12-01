@@ -1,7 +1,7 @@
 import React, {useRef, useState, ReactNode} from "react";
 import { Button, InputGroup, FormGroup, Form} from "react-bootstrap";
 import {Input} from "reactstrap";
-
+import './LocationSign.css'
 import jsPDF from "jspdf";
 // @ts-ignore
 import bwip from "bwip-js";
@@ -124,7 +124,7 @@ function LocationSign()
 					<div ref={inputRef}>
 						<Form noValidate validated={validated} onSubmit={handleSubmit}>
 							<FormGroup>
-								<div style={{display: "flex", alignItems: "center", justifyContent: "center"}}>
+								<div className="locationSignForm" style={{display: "flex", alignItems: "center", justifyContent: "center"}}>
 									<InputGroup style={{margin: '10px'}}>
 										<InputGroup.Text id="ig-location">Location</InputGroup.Text>
 										<Input id="locationInput" name="locationInput" innerRef={locationRef}  required={true} type="text"/>
