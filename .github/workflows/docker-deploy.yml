@@ -17,7 +17,7 @@ env:
   IMAGE_NAME: costabarcodes
 
 jobs:
-  push:
+  Build_Docker:
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -31,6 +31,7 @@ jobs:
         run: |
           touch .env
           echo GITHUB_AUTH=${{ secrets.GITHUB_TOKEN }} >> .env
+          echo IS_PROD="1" >> .env
           echo "ls -a"
           ls -a
 
