@@ -1,0 +1,291 @@
+body {
+  font-family: "Roboto", sans-serif !important;
+}
+
+.rootLoading {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+/*#region Main Loading Container */
+.indexLoadingContent {
+  width: 110vw;
+  height: 110vh;
+  position: relative;
+}
+
+.indexFadeAnimation {
+  animation: fadeOut 2s;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+/*#endregion Main Loading Container */
+/*#region Background */
+.backgroundLoadingDiv {
+  background: linear-gradient(45deg, #ff00d4, #00ddff);
+  background-size: 400% 400%;
+  -webkit-animation: loadingBackground 30s ease infinite;
+  -moz-animation: loadingBackground 30s ease infinite;
+  -o-animation: loadingBackground 30s ease infinite;
+  animation: loadingBackground 30s ease infinite;
+}
+
+@-webkit-keyframes loadingBackground {
+  0% {
+    background-position: 51% 0%;
+  }
+  50% {
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 51% 0%;
+  }
+}
+@-moz-keyframes loadingBackground {
+  0% {
+    background-position: 51% 0%;
+  }
+  50% {
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 51% 0%;
+  }
+}
+@-o-keyframes loadingBackground {
+  0% {
+    background-position: 51% 0%;
+  }
+  50% {
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 51% 0%;
+  }
+}
+@keyframes loadingBackground {
+  0% {
+    background-position: 51% 0%;
+  }
+  50% {
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 51% 0%;
+  }
+}
+/*#endregion Background */
+/* Loading Icon */
+/*#region Loading Icon */
+/* Loading Icon Positioning and colors */
+.loadingIcon {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  --c1: #FFBE0B;
+  --c2: #FB5607;
+  --c3: #FF006E;
+  --c4: #8338EC;
+  --c5: #8AC926;
+  --speed: 1.25s; /* animation duration */
+}
+
+@keyframes spinnerElements {
+  0% {
+    transform: translate(16px, 84px) scale(0);
+  }
+  25% {
+    transform: translate(16px, 84px) scale(0);
+  }
+  50% {
+    transform: translate(16px, 84px) scale(1);
+  }
+  75% {
+    transform: translate(84px, 84px) scale(1);
+  }
+  100% {
+    transform: translate(152px, 84px) scale(1);
+  }
+}
+@keyframes spinnerElements-r {
+  0% {
+    transform: translate(152px, 84px) scale(1);
+  }
+  100% {
+    transform: translate(152px, 84px) scale(0);
+  }
+}
+@keyframes spinnerElements-c {
+  0% {
+    background: var(--c1);
+  }
+  25% {
+    background: var(--c2);
+  }
+  50% {
+    background: var(--c3);
+  }
+  75% {
+    background: var(--c4);
+  }
+  100% {
+    background: var(--c5);
+  }
+}
+.spinnerElements div {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transform: translate(84px, 84px) scale(1);
+  background: var(--c1);
+  animation: spinnerElements var(--speed) infinite cubic-bezier(0, 0.5, 0.5, 1);
+}
+
+.spinnerElements div:nth-child(1) {
+  background: var(--c1);
+  transform: translate(152px, 84px) scale(1);
+  animation: spinnerElements-r calc(var(--speed) / 4) infinite cubic-bezier(0, 0.5, 0.5, 1), spinnerElements-c var(--speed) infinite step-start;
+}
+
+.spinnerElements div:nth-child(2) {
+  animation-delay: calc(var(--speed) / -4);
+  background: var(--c2);
+}
+
+.spinnerElements div:nth-child(3) {
+  animation-delay: calc(var(--speed) / -2);
+  background: var(--c3);
+}
+
+.spinnerElements div:nth-child(4) {
+  animation-delay: calc(var(--speed) / -4 * 3);
+  background: var(--c4);
+}
+
+.spinnerElements div:nth-child(5) {
+  animation-delay: calc(var(--speed) * -1);
+  background: var(--c5);
+}
+
+.spinner {
+  width: 200px;
+  height: 200px;
+  display: inline-block;
+  overflow: hidden;
+  background: none;
+}
+
+.spinnerElements {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform: translateZ(0) scale(1);
+  backface-visibility: hidden;
+  transform-origin: 0 0; /* see note above */
+}
+
+.spinnerElements div {
+  box-sizing: content-box;
+}
+
+/*#endregion Loading Icon */
+/*#region Box Loading Icon*/
+#forklift {
+  position: relative;
+  width: 515px;
+  height: 430px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+}
+
+.forklift {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  animation: bounce 1s infinite;
+}
+
+.box {
+  position: absolute;
+  top: 160px;
+  animation: bounce2 1s ease-in infinite;
+}
+
+.wheel {
+  position: absolute;
+  animation: spin 4s infinite linear;
+  top: 340px;
+  z-index: 2;
+}
+
+.wheel-1 {
+  left: 280px;
+}
+
+.wheel-2 {
+  left: 400px;
+}
+
+.lift {
+  position: absolute;
+  left: 0;
+  top: 120px;
+  animation: bounce 1s infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes smoke {
+  from {
+    background-position-x: 0px;
+  }
+  to {
+    background-position-x: -1491px;
+  }
+}
+@keyframes bounce {
+  0% {
+    transform: translate3d(0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0) rotate(1deg);
+  }
+  100% {
+    transform: translate3d(0);
+  }
+}
+@keyframes bounce2 {
+  0% {
+    transform: translate3d(0);
+  }
+  50% {
+    transform: translate3d(0, -20px, 0) rotate(1deg);
+  }
+  100% {
+    transform: translate3d(0);
+  }
+}
+/*#endregion Box Loading Icon*/
+
+/*# sourceMappingURL=mainIndex.css.map */

@@ -9,9 +9,6 @@ on:
     # Publish `v1.2.3` tags as releases.
     tags:
       - v*
-
-  # Run tests for any PRs.
-  pull_request:
   
   # Manual run
   workflow_dispatch:
@@ -20,8 +17,6 @@ env:
   IMAGE_NAME: costabarcodes
 
 jobs:
-  # Push image to GitHub Packages.
-  # See also https://docs.docker.com/docker-hub/builds/
   push:
     runs-on: ubuntu-latest
     permissions:
@@ -30,6 +25,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      #Create a env file for github auth token
+      - name : Create env file
+        run: |
+          touch .env
+          echo GITHUB_AUTH=${{ secrets.GITHUB_TOKEN }} >> .env
+          echo "ls -a"
+          ls -a
 
       - name: Build image
         run: docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"

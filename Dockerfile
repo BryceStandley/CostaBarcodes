@@ -11,8 +11,9 @@ RUN npm ci
 RUN npm run build
 
 ENV NODE_ENV=production
+ENV DOTENV_CONFIG_PATH=./.env
 
 EXPOSE 9900
 
 # start app
-CMD ["node", "./build/server.js"]
+CMD ["node", "-r", "dotenv/config", "./build/server.js"]

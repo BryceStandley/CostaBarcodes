@@ -120,6 +120,8 @@ function Scale()
 
     }
 
+    document.title = 'Costa Barcodes | Scale Login';
+
     return(
             <div>
                 <div style={{
