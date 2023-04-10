@@ -15,7 +15,7 @@
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.6",
     "bootstrap": "^5.2.3",
-    "bwip-js": "^3.1.0",
+    "bwip-js": "^3.4.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "html2canvas": "^1.4.1",
