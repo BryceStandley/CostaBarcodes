@@ -20,7 +20,7 @@
     "express": "^4.18.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
-    "jspdf-autotable": "^3.5.25",
+    "jspdf-autotable": "^3.5.29",
     "raw-loader": "^4.0.2",
     "react": "^18.2.0",
     "react-barcode": "^1.4.5",
