@@ -1,12 +1,12 @@
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { Link } from 'react-router-dom';
 import React from "react";
-import { faHome, faFileAlt, faSignOutAlt, faSignInAlt, faLightbulb, faUser, faBarcode, faSignsPost } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faFileAlt, faSignOutAlt, faSignInAlt, faLightbulb, faUser, faBarcode, faSignsPost, faCalendarDay } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import latestRepoStats from 'objects/repo_stats'
 
-library.add(faHome, faFileAlt, faSignInAlt, faSignOutAlt, faLightbulb, faUser, faBarcode, faSignsPost, faGithub);
+library.add(faHome, faFileAlt, faSignInAlt, faSignOutAlt, faLightbulb, faUser, faBarcode, faSignsPost, faGithub, faCalendarDay);
 
 function NavigationBar()
 {
@@ -29,6 +29,12 @@ function NavigationBar()
                     
                     <hr className='nav-title-separator' />
 
+                    <li className='nav-item' >
+                        <Link className='nav-link text-white' to='/bookings'>
+                            <FontAwesomeIcon icon={faCalendarDay} style={{paddingRight: '10px'}}/>
+                            Bookings
+                        </Link>
+                    </li>
                     <li className='nav-item' >
                         <Link className='nav-link text-white' to='/worksheet'>
                             <FontAwesomeIcon icon={faHome} style={{paddingRight: '10px'}}/>
