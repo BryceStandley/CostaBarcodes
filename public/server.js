@@ -3,7 +3,7 @@ const path = require('path');
 const app = express();
 require('dotenv').config({path: path.resolve(__dirname, '../.env'), debug: true});
 
-if(process.env.IS_PROD === '1')//Is in production mode
+if(process.env.REACT_APP_IS_PROD === '1')//Is in production mode
 {
   console.log('Server environment: Production');
   app.use(express.static('build'));

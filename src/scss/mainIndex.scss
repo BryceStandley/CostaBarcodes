@@ -2,7 +2,13 @@ body {
 	font-family: 'Roboto', sans-serif !important;
 }
 
-
+::ng-deep .ag-header-group-cell-label {
+	justify-content: center !important;
+  }
+  
+::ng-deep .ag-header-cell-label {
+	justify-content: center !important;
+}
 
 .rootLoading {
 	width: 100vw;

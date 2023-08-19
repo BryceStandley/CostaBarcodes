@@ -2,6 +2,10 @@
   size: auto;
 }
 
+.ag-header-cell-label {
+  justify-content: center;
+}
+
 .table tr {
   border: black solid 3px !important;
   table-layout: fixed;
