@@ -6,6 +6,17 @@
   justify-content: center;
 }
 
+.ag-row-selected {
+  border-bottom: 1px solid !important;
+  border-bottom-color: rgba(33,150,243,0.3) !important;
+}
+
+.booking-grid-arrived {
+  background-color: #A8DF8E !important;
+  border-bottom: 1px solid !important;
+  border-bottom-color: #A8DF8E !important;
+}
+
 .table tr {
   border: black solid 3px !important;
   table-layout: fixed;
