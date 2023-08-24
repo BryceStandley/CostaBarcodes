@@ -5,7 +5,6 @@ import "react-datepicker/dist/react-datepicker.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarDay, faL } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core'
-import bookingRecord from "../objects/bookingRecord";
 
 import { AgGridReact } from 'ag-grid-react';
 
@@ -16,12 +15,9 @@ import { initializeApp } from 'firebase/app';
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, collection,  getDocs, query, where, deleteDoc, updateDoc, addDoc, doc} from 'firebase/firestore/lite';
 
-// @ts-ignore
-import { Utils } from 'Utils';
 
 import moment from 'moment';
 import 'moment/locale/en-au';
-import { JsxElement } from "typescript";
 import { SortDirection } from "ag-grid-community";
 moment.locale('en-au');
 
