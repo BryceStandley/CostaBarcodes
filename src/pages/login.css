@@ -1,0 +1,59 @@
+.logBtn {
+  margin-left: 50px;
+  margin-top: 30px;
+}
+
+.mainInputStyle, .loginBtn, .input {
+  border-radius: 10px;
+  height: 50px;
+  background: none;
+  width: -webkit-fill-available;
+}
+
+.form {
+  display: -ms-grid;
+  display: grid;
+  margin: 40px;
+  width: 433px;
+}
+@media (max-width: 550px) {
+  .form {
+    width: 95%;
+  }
+}
+
+input {
+  padding-left: 75px;
+}
+input::-webkit-input-placeholder, input::-moz-placeholder, input::-ms-input-placeholder, input::placeholder {
+  position: absolute;
+  margin-top: 18px;
+  color: #fff;
+}
+
+.input {
+  border: 1px solid #fff;
+  margin-top: 20px;
+}
+
+.loginBtn {
+  border: 2px solid #00ff29;
+  margin-top: 50px;
+  font-size: medium;
+  color: #00ff29;
+  cursor: pointer;
+}
+.loginBtn:active {
+  opacity: 50%;
+}
+.loginBtn:hover {
+  filter: invert(100%);
+}
+
+.icon {
+  position: absolute;
+  margin-top: 30px;
+  margin-left: 20px;
+}
+
+/*# sourceMappingURL=login.css.map */

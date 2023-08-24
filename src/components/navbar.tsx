@@ -10,7 +10,6 @@ library.add(faHome, faFileAlt, faSignInAlt, faSignOutAlt, faLightbulb, faUser, f
 
 function NavigationBar()
 {
-
     return (
             <div className="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark text-center" style={{width: '280px', height: '100vh'}}>
                 <Link className='nav-link nav-brand' to="/worksheet">
@@ -28,6 +27,13 @@ function NavigationBar()
                     </span>
                     
                     <hr className='nav-title-separator' />
+
+                    <li className='nav-item' >
+                        <Link className='nav-link text-white' to='/login'>
+                            <FontAwesomeIcon icon={faUser} style={{paddingRight: '10px'}}/>
+                            User Login
+                        </Link>
+                    </li>
 
                     <li className='nav-item' >
                         <Link className='nav-link text-white' to='/bookings'>

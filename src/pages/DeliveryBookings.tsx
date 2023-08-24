@@ -14,7 +14,8 @@ import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import { initializeApp } from 'firebase/app';
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, collection,  getDocs, query, where, deleteDoc, updateDoc, addDoc, doc} from 'firebase/firestore/lite';
-
+import { getAuth } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 import moment from 'moment';
 import 'moment/locale/en-au';
@@ -40,6 +41,10 @@ const firebaseAnalytics = getAnalytics(firebaseApp);
 function DeliveryBookings()
 {
     document.title = 'Costa Barcodes | Bookings';
+    const navigate = useNavigate();
+    const [authenticated, setAuthenticated] = useState<boolean>(false);
+    const auth = getAuth(firebaseApp);
+
     const contentDivRef = useRef<HTMLDivElement>(null!);
     const [startDate, setStartDate] = useState(new Date());
     const startDateRef = useRef<Date>(startDate);
@@ -410,70 +415,89 @@ function DeliveryBookings()
 
     };
 
-    // Render
-    return(
+    function authedUser() {
+        return(
             <div>
-                <div style={{
-                    textAlign: 'center',
-                    margin: '30px'
-                }}>
-                    <div>
-                        <h1>Delivery Bookings</h1>
-                        <hr/>
-                        <p>Create & Manage delivery bookings</p>
-						<div ref={contentDivRef}>
-                            <DatePicker
-                                id={'datePickler'}
-                                ref={datePicker}
-                                selected={startDate}
-                                dateFormat="dd/MM/yyyy"
-                                onChange={(e) => handleDateChanged(e)}
-                                customInput={<DatePickerButton />}
-                                todayButton="Today"
-                                withPortal
-                            />
-                        </div>
-                        <div>
-                            <span ref={totalPalletsForDate}></span>
-                        </div>
-                        <Button disabled variant="danger" id={'deletebtn'} style={{margin: '30px'}} ref={deleteRowBtn} type={'submit'}>Delete</Button>
-                        <Button disabled variant="primary" id={'rescheduleBtn'} style={{margin: '30px'}} ref={rescheduleBtn} type={'submit'}>Reschedule</Button>
-                        <Button disabled variant="success" id={'arrivedBtn'} style={{margin: '30px'}} ref={arrivedBtn} type={'submit'}>Toggle Arrived</Button>
-                        <Button variant="warning" id={'reloadBtn'} style={{margin: '30px'}} ref={reloadBtn} type={'submit'}>Reload Records</Button>
-                        <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-                            <div ref={recordTableRef} className="ag-theme-alpine" style={{width: 902, height: 500,  }}>
-                                <AgGridReact
+            <div ref={contentDivRef}>
+                <DatePicker
+                    id={'datePickler'}
+                    ref={datePicker}
+                    selected={startDate}
+                    dateFormat="dd/MM/yyyy"
+                    onChange={(e) => handleDateChanged(e)}
+                    customInput={<DatePickerButton />}
+                    todayButton="Today"
+                    withPortal
+                />
+            </div>
+            <div>
+                <span ref={totalPalletsForDate}></span>
+            </div>
+            <Button disabled variant="danger" id={'deletebtn'} style={{margin: '30px'}} ref={deleteRowBtn} type={'submit'}>Delete</Button>
+            <Button disabled variant="primary" id={'rescheduleBtn'} style={{margin: '30px'}} ref={rescheduleBtn} type={'submit'}>Reschedule</Button>
+            <Button disabled variant="success" id={'arrivedBtn'} style={{margin: '30px'}} ref={arrivedBtn} type={'submit'}>Toggle Arrived</Button>
+            <Button variant="warning" id={'reloadBtn'} style={{margin: '30px'}} ref={reloadBtn} type={'submit'}>Reload Records</Button>
+            <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                <div ref={recordTableRef} className="ag-theme-alpine" style={{width: 902, height: 500,  }}>
+                    <AgGridReact
 
-                                    ref={gridRef}
-                                    rowData={rowData}
+                        ref={gridRef}
+                        rowData={rowData}
 
-                                    columnDefs={columnDefs}
-                                    defaultColDef={defaultColDef}
-                                    rowSelection={'single'}
-                                    rowMultiSelectWithClick={true}
+                        columnDefs={columnDefs}
+                        defaultColDef={defaultColDef}
+                        rowSelection={'single'}
+                        rowMultiSelectWithClick={true}
 
-                                    animateRows={true}
-                                    editType={'fullRow'}
-                                    stopEditingWhenCellsLoseFocus={true}
-                                    pinnedTopRowData={[tempRow]}
-                                    
-                                    getRowStyle={getRowStyle}
-                                    getRowClass={getRowClass}
+                        animateRows={true}
+                        editType={'fullRow'}
+                        stopEditingWhenCellsLoseFocus={true}
+                        pinnedTopRowData={[tempRow]}
+                        
+                        getRowStyle={getRowStyle}
+                        getRowClass={getRowClass}
 
-                                    rowClassRules={rowClassRules}
+                        rowClassRules={rowClassRules}
 
-                                    onRowEditingStopped={onRowEditingStopped}
-                                    onRowValueChanged={onRowValueChanged}
-                                    onCellClicked={cellClickedListener}
-                                    onGridReady={onGridReady}
-                                />
-                            </div>
-                        </div>
-                    </div>
+                        onRowEditingStopped={onRowEditingStopped}
+                        onRowValueChanged={onRowValueChanged}
+                        onCellClicked={cellClickedListener}
+                        onGridReady={onGridReady}
+                    />
                 </div>
             </div>
-        );
+        </div>
+        )
+    }
 
+    function unAuthedUser()
+    {
+        return(
+            <div>
+                <h4>
+                    User must be logged in to view bookings.
+                </h4>
+            </div>
+        )
+    }
+    // Render
+    return(
+        <div>
+            <div style={{
+                textAlign: 'center',
+                margin: '30px'
+            }}>
+                <div>
+                    <h1>Delivery Bookings</h1>
+                    <hr/>
+                    <p>Create & Manage delivery bookings</p>
+
+                    {auth.currentUser !== null ?  authedUser() : unAuthedUser()}
+                    
+                </div>
+            </div>
+        </div>
+    );
 }
 
 export default DeliveryBookings;
