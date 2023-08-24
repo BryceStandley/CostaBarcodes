@@ -2,6 +2,14 @@
   size: auto;
 }
 
+.totalsSpans {
+  padding-left: 50px;
+}
+
+.totalsSpansNumber {
+  font-weight: bold;
+}
+
 .ag-header-cell-label {
   justify-content: center;
 }

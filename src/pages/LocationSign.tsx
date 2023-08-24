@@ -24,7 +24,7 @@ function LocationSign()
         e.preventDefault();
         e.stopPropagation();
 
-        if (locationRef.current.value && descRef.current.value && skuRef.current.value ) {
+        if (locationRef.current.value) {
 			locationRef.current.value = locationRef.current.value.toUpperCase();
             GenerateOnClick();
 			setPdfViewer(DisplayViewer());

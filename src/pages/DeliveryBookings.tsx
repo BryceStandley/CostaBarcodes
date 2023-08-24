@@ -3,7 +3,7 @@ import { Button } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarDay } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarDay, faL } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core'
 import bookingRecord from "../objects/bookingRecord";
 
@@ -46,12 +46,14 @@ function DeliveryBookings()
     document.title = 'Costa Barcodes | Bookings';
     const contentDivRef = useRef<HTMLDivElement>(null!);
     const [startDate, setStartDate] = useState(new Date());
+    const startDateRef = useRef<Date>(startDate);
     const DatePickerButton = forwardRef<HTMLButtonElement>((props: any, ref) => {
         return <Button variant="success" style={{margin: '30px'}} ref={ref} onClick={props.onClick} type="submit"><FontAwesomeIcon icon={faCalendarDay} style={{paddingRight: '10px'}}/>{props.value}</Button>
     });
     const deleteRowBtn = useRef<HTMLButtonElement>(null!);
     const rescheduleBtn = useRef<HTMLButtonElement>(null!);
     const arrivedBtn = useRef<HTMLButtonElement>(null!);
+    const reloadBtn = useRef<HTMLButtonElement>(null!);
     const selectedRow = useRef<any>(undefined);
     const recordTableRef = useRef<HTMLDivElement>(null!);
     const [rowData, setRowData] = useState<any>(null);
@@ -137,7 +139,19 @@ function DeliveryBookings()
     // Has the placeholder row data been completed
     function isPinnedRowDataCompleted(params) {
         if (params.rowPinned !== 'top') return;
-        return columnDefs.every((def) => tempRow[def.field]);
+
+        if(columnDefs.every((def) => tempRow[def.field]))
+        {
+            return true;
+        }
+        else if(tempRow['time'] && tempRow['deliveryName'] && tempRow['pallets'])
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     // Has row data been updated
@@ -175,9 +189,6 @@ function DeliveryBookings()
         cellStyle: {justifyContent: 'center'},
         
     }));
-
-    
-
 
     // Row Styling
     const getRowStyle: any = useCallback(({node}) => { 
@@ -238,22 +249,26 @@ function DeliveryBookings()
     );
 
     const onRowValueChanged = useCallback(async (e) => {
-        //Update firebase record
-        try {
-            const d = doc(firebaseDB, 'deliveryBookings', e.data.id);
-            const data = { time: e.data.time, deliveryName: e.data.deliveryName, purchaseOrder: e.data.purchaseOrder, pallets: e.data.pallets };
-            await updateDoc(d, data).then(() => {
-                console.log("Document Updated Successfully");
-                loadRecords(startDate);
-                selectedRow.current = undefined;
-                disableBtns();
-            });
-                
-        }
-        catch (error) {
-            console.error(error);
+        if(!e.rowPinned)
+        {
+            //Update firebase record
+            try {
+                const d = doc(firebaseDB, 'deliveryBookings', e.data.id);
+                const data = { time: e.data.time, deliveryName: e.data.deliveryName, purchaseOrder: e.data.purchaseOrder, pallets: e.data.pallets };
+                await updateDoc(d, data).then(() => {
+                    console.log("Document Updated Successfully");
+                    loadRecords(startDate);
+                    selectedRow.current = undefined;
+                    disableBtns();
+                });
+                    
+            }
+            catch (error) {
+                console.error(error);
+            }
         }
     }, []);
+    
 
     // Load Records from firebase
     async function loadRecords(date)
@@ -262,16 +277,30 @@ function DeliveryBookings()
         await getDocs(query(col, where('date', '==', moment(date).format('L')))).then((snapshot) => {
             let lst: any = [];
             let total = 0;
+            let totArr = 0;
             snapshot.docs.forEach((doc) => {
                 let d = doc.data();
                 d.id = doc.id;
                 lst.push(d);
                 const i = parseInt(d.pallets);
-                !Number.isNaN(i) ? total += i : total += 0; 
+                if(!Number.isNaN(i))
+                {
+                    total += i
+                    if(d.arrived)
+                    {
+                        totArr += i;
+                    }
+                }
             });
             setRowData(lst);
 
-            totalPalletsForDate.current.innerText = "Total Pallets: " + total;
+            const t = '<span class=\'totalsSpans\'>Total Pallets: <span class=\'totalsSpansNumber\'>' + total.toString() + '</span></span>';
+            const a = '<span class=\'totalsSpans\'>Total Arrived: <span class=\'totalsSpansNumber\'>' + totArr.toString() + '</span></span>';
+            const r = '<span class=\'totalsSpans\'>Total Remaining: <span class=\'totalsSpansNumber\'>' + (total - totArr).toString() + '</span></span>';
+
+
+            totalPalletsForDate.current.innerHTML = t + a + r;
+            //totalPalletsForDate.current.innerText = "Total Pallets: " + total.toString() + "    |    Total Arrived: " + totArr.toString() + '&nbsp;' +"|      Total Remaining: " + (total - totArr).toString();
         });
     }
 
@@ -286,7 +315,7 @@ function DeliveryBookings()
                     const data = { date: moment(e).format('L') };
                     await updateDoc(d, data).then(() => {
                         console.log("Document Rescheduled Successfully");
-                        loadRecords(startDate);
+                        loadRecords(startDateRef.current);
                         selectedRow.current = undefined;
                         disableBtns();
                     });
@@ -298,6 +327,7 @@ function DeliveryBookings()
         else
         {
             setStartDate(e);
+            startDateRef.current = e;
             loadRecords(e);
             selectedRow.current = undefined;
             disableBtns();
@@ -329,6 +359,8 @@ function DeliveryBookings()
             await deleteDoc(d).then(() => {
                 console.log("Document", selectedRow.current.id, "deleted");
                 loadRecords(startDate);
+                selectedRow.current = undefined;
+                disableBtns();
             });
         }
         catch (error) {
@@ -345,6 +377,10 @@ function DeliveryBookings()
         datePicker.current.input.click();
     }
 
+    const onReloadBtnClick = async (e) => {
+        handleDateChanged(startDateRef.current);
+    }
+
     // Toggle Arrived Button Click Event
     const onArrivedBtnClick = async (e) => {
         if(selectedRow.current !== undefined)
@@ -354,7 +390,7 @@ function DeliveryBookings()
                 const data = { arrived: !selectedRow.current.arrived };
                 await updateDoc(d, data).then(() => {
                     console.log("Document Updated Successfully - Arrived Toggle");
-                    loadRecords(startDate);
+                    loadRecords(startDateRef.current);
                     selectedRow.current = undefined;
                     disableBtns();
                 });
@@ -373,7 +409,8 @@ function DeliveryBookings()
         document.getElementById('rescheduleBtn').onclick = onRescheduleBtnClick;
         //@ts-ignore
         document.getElementById('arrivedBtn').onclick = onArrivedBtnClick;
-
+        //@ts-ignore
+        document.getElementById('reloadBtn').onclick = onReloadBtnClick;
 
     };
 
@@ -406,6 +443,7 @@ function DeliveryBookings()
                         <Button disabled variant="danger" id={'deletebtn'} style={{margin: '30px'}} ref={deleteRowBtn} type={'submit'}>Delete</Button>
                         <Button disabled variant="primary" id={'rescheduleBtn'} style={{margin: '30px'}} ref={rescheduleBtn} type={'submit'}>Reschedule</Button>
                         <Button disabled variant="success" id={'arrivedBtn'} style={{margin: '30px'}} ref={arrivedBtn} type={'submit'}>Toggle Arrived</Button>
+                        <Button variant="warning" id={'reloadBtn'} style={{margin: '30px'}} ref={reloadBtn} type={'submit'}>Reload Records</Button>
                         <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
                             <div ref={recordTableRef} className="ag-theme-alpine" style={{width: 902, height: 500,  }}>
                                 <AgGridReact
