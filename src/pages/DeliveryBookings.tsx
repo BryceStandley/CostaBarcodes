@@ -89,6 +89,7 @@ function DeliveryBookings()
             editable: true,
             sort: 'asc' as SortDirection,
             valueFormatter: formatter as any,
+            
         },
         {
             field: 'deliveryName',
@@ -181,10 +182,15 @@ function DeliveryBookings()
     //@ts-ignore
     const defaultColDef = useMemo( ()=> ({
         sortable: true,
-        width: 900/4,
+        resizeable: true,
+        width: 984 / 4,
         cellStyle: {justifyContent: 'center'},
-        
+        suppressHorizontalScroll: true,
     }));
+
+    function sizeToFit() {
+        gridRef.current.api.sizeColumnsToFit();
+      }
 
     // Row Styling
     const getRowStyle: any = useCallback(({node}) => { 
@@ -223,11 +229,11 @@ function DeliveryBookings()
                 // Insert new record
                 try {
                     let data = tempRow;
-                    data['date'] = moment(startDate).format('L');
+                    data['date'] = moment(startDateRef.current).format('L');
                     data['arrived'] = false;
                     await addDoc(col, tempRow).then(doc => {
                         console.log("Document Added Successfully with ID: ", doc.id);
-                        tempRow['date'] = moment(startDate).format('L');
+                        tempRow['date'] = moment(startDateRef.current).format('L');
                         tempRow['id'] = doc.id;
                         tempRow['arrived'] = false;
                     });
@@ -253,7 +259,7 @@ function DeliveryBookings()
                 const data = { time: e.data.time, deliveryName: e.data.deliveryName, purchaseOrder: e.data.purchaseOrder, pallets: e.data.pallets };
                 await updateDoc(d, data).then(() => {
                     console.log("Document Updated Successfully");
-                    loadRecords(startDate);
+                    loadRecords(startDateRef.current);
                     selectedRow.current = undefined;
                     disableBtns();
                 });
@@ -296,6 +302,8 @@ function DeliveryBookings()
 
 
             totalPalletsForDate.current.innerHTML = t + a + r;
+
+            sizeToFit();
             //totalPalletsForDate.current.innerText = "Total Pallets: " + total.toString() + "    |    Total Arrived: " + totArr.toString() + '&nbsp;' +"|      Total Remaining: " + (total - totArr).toString();
         });
     }
@@ -354,7 +362,7 @@ function DeliveryBookings()
             const d = doc(firebaseDB, 'deliveryBookings', selectedRow.current.id);
             await deleteDoc(d).then(() => {
                 console.log("Document", selectedRow.current.id, "deleted");
-                loadRecords(startDate);
+                loadRecords(startDateRef.current);
                 selectedRow.current = undefined;
                 disableBtns();
             });
@@ -441,12 +449,12 @@ function DeliveryBookings()
                         <Button disabled variant="success" id={'arrivedBtn'} style={{margin: '30px'}} ref={arrivedBtn} type={'submit'}>Toggle Arrived</Button>
                         <Button variant="warning" id={'reloadBtn'} style={{margin: '30px'}} ref={reloadBtn} type={'submit'}>Reload Records</Button>
                         <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-                            <div ref={recordTableRef} className="ag-theme-alpine" style={{width: 902, height: 500,  }}>
+                            <div ref={recordTableRef} className="ag-theme-alpine, bookingGrid" style={{height: 500, width: 1000}}>
                                 <AgGridReact
 
                                     ref={gridRef}
                                     rowData={rowData}
-
+                                    
                                     columnDefs={columnDefs}
                                     defaultColDef={defaultColDef}
                                     rowSelection={'single'}

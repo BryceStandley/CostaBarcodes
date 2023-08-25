@@ -1,6 +1,9 @@
 @page {
   size: auto;
 }
+.bookingGrid {
+  overflow: hidden !important;
+}
 
 .totalsSpans {
   padding-left: 50px;
