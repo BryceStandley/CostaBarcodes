@@ -8,7 +8,6 @@ import PalletLabel from "./pages/Pallet-label";
 import Scale from "./pages/Scale";
 import LocationSign from './pages/LocationSign'
 import BarcodeGen from './pages/Barcode-Gen';
-import CodeViewer from './pages/CodeViewer';
 import DeliveryBookings from 'pages/DeliveryBookings';
 import MobileNavigationBar from 'components/navbar_mobile';
 
@@ -33,7 +32,6 @@ function App() {
                                                         <Route path="/pallet-label" element={ <PalletLabel /> }/>
                                                         <Route path="/scale-login" element={ <Scale /> }/>
                                                         <Route path="/ltbarcode" element={ <BarcodeGen /> }/>
-                                                        <Route path="/code" element={ <CodeViewer /> }/>
                                                         <Route path="/location-sign" element={<LocationSign />} />
                                                         <Route path="/" element={<Navigate to="/bookings" replace/>}/>
                                                         <Route path="*" element={<Navigate to="/bookings" replace/>}/>
