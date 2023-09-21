@@ -1,19 +1,34 @@
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { Link } from 'react-router-dom';
-import React from "react";
+import React, { useRef, useState } from "react";
 import { faHome, faFileAlt, faSignOutAlt, faSignInAlt, faLightbulb, faUser, faBarcode, faSignsPost, faCalendarDay } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import latestRepoStats from 'objects/repo_stats'
+import { scaleRotate as Menu } from 'react-burger-menu'
 
 library.add(faHome, faFileAlt, faSignInAlt, faSignOutAlt, faLightbulb, faUser, faBarcode, faSignsPost, faGithub, faCalendarDay);
 
-function NavigationBar()
+
+
+
+function MobileNavigationBar()
 {
 
+    const [menuOpen, setMenuOpen] = useState<boolean>(false);
+
+    const handleStateChange = (state) => {
+        setMenuOpen(state.isOpen);
+    }
+
+    const onLinkClicked = () => {
+        setMenuOpen(false);
+    };
+
     return (
-            <div className="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark text-center" style={{width: '280px', height: '110vh'}}>
-                <Link className='nav-link nav-brand' to="/worksheet">
+        <Menu pageWrapId={"page-wrap"} outerContainerId={"outer-container"} itemListElement="div" isOpen={menuOpen} onStateChange={(state) => handleStateChange(state)}>
+            <div className="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark text-center" style={{width: '280px', height: '90vh'}}>
+                <Link className='nav-link nav-brand' to="/worksheet" onClick={onLinkClicked}>
                     <h3>
                         <strong>
                             Costa Barcodes
@@ -30,19 +45,19 @@ function NavigationBar()
                     <hr className='nav-title-separator' />
 
                     <li className='nav-item' >
-                        <Link className='nav-link text-white' to='/bookings'>
+                        <Link className='nav-link text-white' to='/bookings' onClick={onLinkClicked}>
                             <FontAwesomeIcon icon={faCalendarDay} style={{paddingRight: '10px'}}/>
                             Bookings
                         </Link>
                     </li>
                     <li className='nav-item' >
-                        <Link className='nav-link text-white' to='/worksheet'>
+                        <Link className='nav-link text-white' to='/worksheet' onClick={onLinkClicked}>
                             <FontAwesomeIcon icon={faHome} style={{paddingRight: '10px'}}/>
                             Worksheet
                         </Link>
                     </li>
                     <li className='nav-item' >
-                        <Link className='nav-link text-white' to='/pallet-label'>
+                        <Link className='nav-link text-white' to='/pallet-label' onClick={onLinkClicked}>
                             <FontAwesomeIcon icon={faFileAlt} style={{paddingRight: '10px'}}/>
                             Pallet Labels
                         </Link>
@@ -56,7 +71,7 @@ function NavigationBar()
                     </span>
                     <hr className='nav-title-separator' />
                     <li className='nav-item' >
-                        <Link className='nav-link text-white' to='/location-sign'>
+                        <Link className='nav-link text-white' to='/location-sign' onClick={onLinkClicked}>
                             <FontAwesomeIcon icon={faSignsPost} style={{paddingRight: '10px'}}/>
                             Location Sign
                         </Link>
@@ -71,19 +86,19 @@ function NavigationBar()
                     <hr className='nav-title-separator' />
 
                     <li className='nav-item'>
-                        <Link className='nav-link text-white' to='/scale-login'>
+                        <Link className='nav-link text-white' to='/scale-login' onClick={onLinkClicked}>
                             <FontAwesomeIcon icon={faUser} style={{paddingRight: '10px'}}/>
                             Scale Login
                         </Link>
                     </li>
                     <li className='nav-item'>
-                        <Link className='nav-link text-white' to='/ltbarcode'>
+                        <Link className='nav-link text-white' to='/ltbarcode' onClick={onLinkClicked}>
                             <FontAwesomeIcon icon={faBarcode} style={{paddingRight: '10px'}} />
                             Lt. Barcode
                         </Link>
                     </li>
                 </ul>
-                <div className='d-flex align-items-center text-white' style={{position: 'relative', fontSize: 12, opacity: '0.5', transform: 'translateY(-10vh)'}}>
+                <div className='d-flex align-items-center text-white' style={{position: 'relative', fontSize: 12, opacity: '0.5'}}>
                     <div className='flex-row' style={{width: '280px'}}>
                         <div className='flex-column'>
                             Version
@@ -108,7 +123,7 @@ function NavigationBar()
                     </div>
                 </div>
                 <hr />
-                <div className='d-flex align-items-center text-white text-decoration-none' style={{position: 'relative',transform: 'translateY(-10vh)'}}>
+                <div className='d-flex align-items-center text-white text-decoration-none' style={{position: 'relative'}}>
                     <div className='flex-row' style={{width: '280px'}}>
                         <div className='flex-column'>
                             <strong>
@@ -121,7 +136,8 @@ function NavigationBar()
                     </div>
                 </div>
             </div>
+            </Menu>
     );
 }
 
-export default NavigationBar;
+export default MobileNavigationBar;
