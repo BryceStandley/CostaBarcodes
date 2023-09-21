@@ -126,7 +126,8 @@ function Scale()
             <div>
                 <div style={{
                     textAlign: "center",
-                    margin: '30px'
+                    margin: '30px',
+                    height: '1000px'
                 }}>
                     <div>
                         <h1>Scale Login</h1>

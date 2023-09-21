@@ -15,6 +15,8 @@ import { initializeApp } from 'firebase/app';
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, collection,  getDocs, query, where, deleteDoc, updateDoc, addDoc, doc} from 'firebase/firestore/lite';
 
+import { useMediaQuery } from 'react-responsive'
+
 
 import moment from 'moment';
 import 'moment/locale/en-au';
@@ -57,6 +59,12 @@ function DeliveryBookings()
     const datePicker = useRef<DatePicker>(null!);
     const rescheduling = useRef<boolean>(false);
     const totalPalletsForDate = useRef<HTMLSpanElement>(null!);
+
+    const isDesktopOrLaptop = useMediaQuery({query: '(min-width: 1224px)'})
+    const isBigScreen = useMediaQuery({ query: '(min-width: 1824px)' })
+    const isTabletOrMobile = useMediaQuery({ query: '(max-width: 1224px)' })
+    const isPortrait = useMediaQuery({ query: '(orientation: portrait)' })
+    const isRetina = useMediaQuery({ query: '(min-resolution: 2dppx)' })
 
     // AG Grid API ref
     const gridRef = useRef<any>({});
@@ -295,10 +303,10 @@ function DeliveryBookings()
                 }
             });
             setRowData(lst);
-
-            const t = '<span class=\'totalsSpans\'>Total Pallets: <span class=\'totalsSpansNumber\'>' + total.toString() + '</span></span>';
-            const a = '<span class=\'totalsSpans\'>Total Arrived: <span class=\'totalsSpansNumber\'>' + totArr.toString() + '</span></span>';
-            const r = '<span class=\'totalsSpans\'>Total Remaining: <span class=\'totalsSpansNumber\'>' + (total - totArr).toString() + '</span></span>';
+            totalPalletsForDate.current.innerHTML = "";
+            const t = isDesktopOrLaptop ? '<span class=\'totalsSpans\'>Total Pallets: <span class=\'totalsSpansNumber\'>' + total.toString() + '</span></span>' : '<p class=\'totalsSpans\'>Total Pallets: <span class=\'totalsSpansNumber\'>' + total.toString() + '</span></p>' ;
+            const a = isDesktopOrLaptop ? '<span class=\'totalsSpans\'>Total Arrived: <span class=\'totalsSpansNumber\'>' + totArr.toString() + '</span></span>' : '<p class=\'totalsSpans\'>Total Arrived: <span class=\'totalsSpansNumber\'>' + totArr.toString() + '</span></p>';
+            const r = isDesktopOrLaptop ? '<span class=\'totalsSpans\'>Total Remaining: <span class=\'totalsSpansNumber\'>' + (total - totArr).toString() + '</span></span>' : '<p class=\'totalsSpans\'>Total Remaining: <span class=\'totalsSpansNumber\'>' + (total - totArr).toString() + '</span></p>';
 
 
             totalPalletsForDate.current.innerHTML = t + a + r;
@@ -423,7 +431,8 @@ function DeliveryBookings()
             <div>
                 <div style={{
                     textAlign: 'center',
-                    margin: '30px'
+                    margin: '30px',
+                    paddingBottom: '100px'
                 }}>
                     <div>
                         <h1>Delivery Bookings</h1>
