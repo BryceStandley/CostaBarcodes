@@ -162,7 +162,7 @@ function PalletLabel()
                 <div style={{
                     textAlign: "center",
                     margin: '30px',
-                    height: '1000px'
+                    paddingBottom: '100px'
                 }}>
                     <div>
                         <h1>Pallet Labels</h1>

@@ -127,13 +127,13 @@ function Scale()
                 <div style={{
                     textAlign: "center",
                     margin: '30px',
-                    height: '1000px'
+                    paddingBottom: '100px'
                 }}>
                     <div>
                         <h1>Scale Login</h1>
                         <p>Generate user login cards for Scale by entering the username and password of the account</p>
                         <hr/>
-                        <p>Username:  <strong>FirstName.LastName</strong> OR  <strong>FirstName.LastName@costa.local</strong></p>
+                        <p>Username:  <strong>FirstName.LastName</strong> OR  <strong>FirstName.LastName@costas.local</strong></p>
                         <p>Passwords can be any combination</p>
                         <hr />
                         <div ref={inputRef}>

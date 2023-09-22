@@ -103,7 +103,7 @@ function BarcodeGen()
                 <div style={{
                     textAlign: "center",
                     margin: '30px',
-                    height: '1000px'
+                    paddingBottom: '100px'
                 }}>
                     <h1>Lt. Barcode</h1>
                     <p>Generate general use barcodes for any type of use.</p>

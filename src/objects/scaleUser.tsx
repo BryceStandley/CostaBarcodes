@@ -15,12 +15,12 @@ class ScaleUser
 
         if(!username.includes("@"))
         {
-            un += "@costa.local";
+            un += "@costas.local";
             n = username;
         }
         else
         {
-            n = username.replace("@costa.local", "");
+            n = username.replace("@costas.local", "");
         }
 
 
@@ -35,7 +35,7 @@ class ScaleUser
         //console.log(nameTemp);
         this.name = nameTemp.slice(0, -1);
 
-        this.qrData = un + "^TAB" + password;
+        this.qrData = un + '^TAB' + password;
     }
 
 }

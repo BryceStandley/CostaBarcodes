@@ -180,7 +180,7 @@ function Worksheet()
                 <div style={{
                     textAlign: 'center',
                     margin: '30px',
-                    height: '1000px'
+                    paddingBottom: '100px'
                 }}>
                     <div id="inputField" ref={inputDivRef}>
                         <h1>Receival Worksheet</h1>

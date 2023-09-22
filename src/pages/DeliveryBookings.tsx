@@ -59,6 +59,7 @@ function DeliveryBookings()
     const datePicker = useRef<DatePicker>(null!);
     const rescheduling = useRef<boolean>(false);
     const totalPalletsForDate = useRef<HTMLSpanElement>(null!);
+    const [editing, setEditing] = useState<boolean>(false);
 
     const isDesktopOrLaptop = useMediaQuery({query: '(min-width: 1224px)'})
     const isBigScreen = useMediaQuery({ query: '(min-width: 1824px)' })
@@ -77,8 +78,12 @@ function DeliveryBookings()
         }
         else if(params.colDef.field === 'time')
         {
-            const hours = parseInt(params.value.slice(0, 2));
-            const minutes = parseInt(params.value.slice(2));
+            let t = "0000";
+
+            params.value === null ? t = "0000" : t = params.value;
+            
+            const hours = parseInt(t.slice(0, 2));
+            const minutes = parseInt(t.slice(2));
 
             const ampm = hours >= 12 ? 'PM' : 'AM';
             const adjustedHours = hours > 12 ? hours - 12 : hours;
@@ -171,7 +176,7 @@ function DeliveryBookings()
 
         const row = event.api.getSelectedRows()[0];
         //console.log("Cell Clicked", row);
-        if(row === undefined)
+        if(row === undefined || editing)
         {
             //setSelectedRow(undefined);
             selectedRow.current = undefined;
@@ -226,6 +231,14 @@ function DeliveryBookings()
         'booking-grid-arrived': 'data.arrived',
     }
 
+    //On Row Editing Started Event
+    const onRowEditingStarted = useCallback(async (params) => 
+    {
+        setEditing(true);
+    },
+    [rowData, tempRow]
+    );
+
     // On Row Editing Stopped Event
     const onRowEditingStopped = useCallback(async (params) => 
     {
@@ -233,12 +246,16 @@ function DeliveryBookings()
         {
             if (isPinnedRowDataCompleted(params)) 
             {
+                setEditing(false);
                 const col = collection(firebaseDB, 'deliveryBookings');
                 // Insert new record
                 try {
                     let data = tempRow;
                     data['date'] = moment(startDateRef.current).format('L');
                     data['arrived'] = false;
+                    data['time'] = convertTime(data['time']);
+                    data['deliveryName'] = data['deliveryName'].toUpperCase();
+                    data['purchaseOrder'] = data['purchaseOrder'].toUpperCase();
                     await addDoc(col, tempRow).then(doc => {
                         console.log("Document Added Successfully with ID: ", doc.id);
                         tempRow['date'] = moment(startDateRef.current).format('L');
@@ -259,12 +276,13 @@ function DeliveryBookings()
     );
 
     const onRowValueChanged = useCallback(async (e) => {
+        setEditing(false);
         if(!e.rowPinned)
         {
             //Update firebase record
             try {
                 const d = doc(firebaseDB, 'deliveryBookings', e.data.id);
-                const data = { time: e.data.time, deliveryName: e.data.deliveryName, purchaseOrder: e.data.purchaseOrder, pallets: e.data.pallets };
+                const data = { time: convertTime(e.data.time), deliveryName: e.data.deliveryName.toUpperCase(), purchaseOrder: e.data.purchaseOrder.toUpperCase(), pallets: e.data.pallets };
                 await updateDoc(d, data).then(() => {
                     console.log("Document Updated Successfully");
                     loadRecords(startDateRef.current);
@@ -279,6 +297,35 @@ function DeliveryBookings()
         }
     }, []);
     
+    //Converts a time string into the correct format
+    function convertTime(time)
+    {
+        let t = time.split(/(?:AM|PM|:)/).join('');
+        if(t.length > 4)
+        {
+            return "0000";
+        }
+        else if(t.length === 4)
+        {
+            return t;
+        }
+        else if(t.length === 3)
+        {
+            return "0" + t;
+        }
+        else if(t.length === 2)
+        {
+            return t + "00";
+        }
+        else if(t.length === 1)
+        {
+            return "0" + t + "00";
+        }
+        else
+        {
+            return t;
+        }
+    }
 
     // Load Records from firebase
     async function loadRecords(date)
@@ -482,6 +529,7 @@ function DeliveryBookings()
                                     onRowEditingStopped={onRowEditingStopped}
                                     onRowValueChanged={onRowValueChanged}
                                     onCellClicked={cellClickedListener}
+                                    onRowEditingStarted={onRowEditingStarted}
                                     onGridReady={onGridReady}
                                 />
                             </div>
