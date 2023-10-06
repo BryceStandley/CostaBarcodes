@@ -1,3 +1,3 @@
 ### Costa Barcodes
 
-React app for generating different warehouse related barcode printouts.
+React app for generating different warehouse related barcodes among other warehouse related features.
