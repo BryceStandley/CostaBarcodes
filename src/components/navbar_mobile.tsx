@@ -128,7 +128,7 @@ function MobileNavigationBar()
                         <div className='flex-column'>
                             <strong>
                                 <a className='nav-link text-white d-inline' href='https://github.com/BryceStandley' target="_blank" rel="noopener noreferrer">
-                                    &copy; 2022 - Bryce Standley
+                                    &copy; 2023 - Bryce Standley
                                     <FontAwesomeIcon icon={faGithub} style={{paddingLeft: '10px'}} />
                                 </a>
                             </strong>
