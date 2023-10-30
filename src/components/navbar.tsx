@@ -88,7 +88,8 @@ function NavigationBar()
                         <div className='flex-column'>
                             Version
                             <strong style={{paddingLeft: '20px'}}>
-                                {latestRepoStats.latestCommit?.Title}
+                                
+                                {process.env.REACT_APP_VERSION}
                             </strong>
                         </div>
                         <div className='flex-column'>

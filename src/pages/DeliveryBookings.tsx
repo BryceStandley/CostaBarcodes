@@ -44,19 +44,28 @@ function DeliveryBookings()
     document.title = 'Costa Barcodes | Bookings';
     const contentDivRef = useRef<HTMLDivElement>(null!);
     const [startDate, setStartDate] = useState(new Date());
+    const [selectedBookingDate, setselectedBookingDate] = useState(new Date());
     const startDateRef = useRef<Date>(startDate);
-    const DatePickerButton = forwardRef<HTMLButtonElement>((props: any, ref) => {
-        return <Button variant="success" style={{margin: '30px'}} ref={ref} onClick={props.onClick} type="submit"><FontAwesomeIcon icon={faCalendarDay} style={{paddingRight: '10px'}}/>{props.value}</Button>
-    });
+    const selectedBookingDateRef = useRef<Date>(selectedBookingDate);
+    const rescheduleDisable = useRef<boolean>(true);
     const deleteRowBtn = useRef<HTMLButtonElement>(null!);
     const rescheduleBtn = useRef<HTMLButtonElement>(null!);
     const arrivedBtn = useRef<HTMLButtonElement>(null!);
     const reloadBtn = useRef<HTMLButtonElement>(null!);
+
+    const DatePickerButton = forwardRef<HTMLButtonElement>((props: any, ref) => {
+        return <Button variant="success" style={{margin: '30px'}} ref={ref} onClick={props.onClick} type="submit"><FontAwesomeIcon icon={faCalendarDay} style={{paddingRight: '10px'}}/>{props.value}</Button>
+    });
+    const DateTimeRescheduleButton = forwardRef<HTMLButtonElement>((props: any, ref) => {
+        return <Button disabled={props.disabled} id="rescheduleBtn" variant="primary" style={{margin: '30px'}} ref={ref} onClick={props.onClick} type="submit"><FontAwesomeIcon icon={faCalendarDay} style={{paddingRight: '10px'}}/>Reschedule</Button>
+    });
+    
     const selectedRow = useRef<any>(undefined);
     const recordTableRef = useRef<HTMLDivElement>(null!);
     const [rowData, setRowData] = useState<any>(null);
     const [tempRow, setTempRow] = useState({});
     const datePicker = useRef<DatePicker>(null!);
+    const dateTimePicker = useRef<DatePicker>(null!);
     const rescheduling = useRef<boolean>(false);
     const totalPalletsForDate = useRef<HTMLSpanElement>(null!);
     const [editing, setEditing] = useState<boolean>(false);
@@ -186,6 +195,8 @@ function DeliveryBookings()
         {
             //setSelectedRow(row);
             selectedRow.current = row;
+            setselectedBookingDate(moment(row.datetime, 'YYYY-MM-DD hh:mm').toDate())
+            selectedBookingDateRef.current = moment(row.datetime, 'YYYY-MM-DD hh:mm').toDate()
             enableBtns();
         }
 
@@ -247,7 +258,8 @@ function DeliveryBookings()
             if (isPinnedRowDataCompleted(params)) 
             {
                 setEditing(false);
-                const col = collection(firebaseDB, 'deliveryBookings');
+                
+                const col = collection(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings');
                 // Insert new record
                 try {
                     let data = tempRow;
@@ -256,11 +268,15 @@ function DeliveryBookings()
                     data['time'] = convertTime(data['time']);
                     data['deliveryName'] = data['deliveryName'].toUpperCase();
                     data['purchaseOrder'] = data['purchaseOrder'].toUpperCase();
+                    let dt = moment(startDateRef.current).format('L');
+                    dt += " " + data['time'];
+                    data['datetime'] = moment(dt, 'DD/MM/YYYY hhmm').format('YYYY-MM-DDThh:mm:ss');
                     await addDoc(col, tempRow).then(doc => {
                         console.log("Document Added Successfully with ID: ", doc.id);
                         tempRow['date'] = moment(startDateRef.current).format('L');
                         tempRow['id'] = doc.id;
                         tempRow['arrived'] = false;
+                        tempRow['datetime'] = data['datetime'];
                     });
                     setRowData([...rowData, tempRow]);
                     setTempRow({});
@@ -281,7 +297,7 @@ function DeliveryBookings()
         {
             //Update firebase record
             try {
-                const d = doc(firebaseDB, 'deliveryBookings', e.data.id);
+                const d = doc(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings', e.data.id);
                 const data = { time: convertTime(e.data.time), deliveryName: e.data.deliveryName.toUpperCase(), purchaseOrder: e.data.purchaseOrder.toUpperCase(), pallets: e.data.pallets };
                 await updateDoc(d, data).then(() => {
                     console.log("Document Updated Successfully");
@@ -330,7 +346,7 @@ function DeliveryBookings()
     // Load Records from firebase
     async function loadRecords(date)
     {
-        const col = collection(firebaseDB, 'deliveryBookings');
+        const col = collection(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings');
         await getDocs(query(col, where('date', '==', moment(date).format('L')))).then((snapshot) => {
             let lst: any = [];
             let total = 0;
@@ -338,6 +354,9 @@ function DeliveryBookings()
             snapshot.docs.forEach((doc) => {
                 let d = doc.data();
                 d.id = doc.id;
+                let dt = moment(date).format('L');
+                dt += " " + d.time;
+                d.datetime = moment(dt, 'DD/MM/YYYY hhmm').format('YYYY-MM-DD hh:mm');
                 lst.push(d);
                 const i = parseInt(d.pallets);
                 if(!Number.isNaN(i))
@@ -365,45 +384,52 @@ function DeliveryBookings()
 
     // Date selection changed handler
     const handleDateChanged = useCallback(async (e) => {
-        if(selectedRow.current !== undefined && rescheduling.current)
+        setStartDate(e);
+        startDateRef.current = e;
+        loadRecords(e);
+        selectedRow.current = undefined;
+        disableBtns(); 
+    },[]);
+
+    // Date selection changed handler
+    const handleBookingReschedule = useCallback(async (e) => {
+        console.log(selectedBookingDateRef.current)
+        if(selectedRow.current !== undefined && selectedBookingDateRef.current !== selectedRow.current.datetime)
         {
-            //Reschedule to selected date and reload to current date set
-                // Update Date
-                try {
-                    const d = doc(firebaseDB, 'deliveryBookings', selectedRow.current.id);
-                    const data = { date: moment(e).format('L') };
-                    await updateDoc(d, data).then(() => {
-                        console.log("Document Rescheduled Successfully");
-                        loadRecords(startDateRef.current);
-                        selectedRow.current = undefined;
-                        disableBtns();
-                    });
-                }
-                catch (error) {
-                    console.error(error);
-                }
+            //Reschedule to selected date/time and reload to current date set
+            // Update Date/time
+            try {
+                const d = doc(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings', selectedRow.current.id);
+                const data = { date: moment(selectedBookingDateRef.current).format('L'), time: moment(selectedBookingDateRef.current).format('hhmm'), datetime: moment(selectedBookingDateRef.current).format('YYYY-MM-DD hh:mm')};
+                await updateDoc(d, data).then(() => {
+                    console.log("Document Rescheduled Successfully");
+                    loadRecords(startDateRef.current);
+                    selectedRow.current = undefined;
+                    disableBtns();
+                });
+            }
+            catch (error) {
+                console.error(error);
+            }
         }
-        else
-        {
-            setStartDate(e);
-            startDateRef.current = e;
-            loadRecords(e);
-            selectedRow.current = undefined;
-            disableBtns();
-        }    
+ 
     },[]);
 
     //Enable Buttons
     const enableBtns = () => {
         deleteRowBtn.current.removeAttribute('disabled');
-        rescheduleBtn.current.removeAttribute('disabled');
+        document.getElementById('rescheduleBtn')?.removeAttribute('disabled');
+        dateTimePicker.current.disabled = false;
+        rescheduleDisable.current = false;
         arrivedBtn.current.removeAttribute('disabled');
     }
 
     // Disable Buttons
     const disableBtns = () => {
         deleteRowBtn.current.setAttribute('disabled', 'true');
-        rescheduleBtn.current.setAttribute('disabled', 'true');
+        document.getElementById('rescheduleBtn')?.setAttribute('disabled', 'true');
+        dateTimePicker.current.disabled = true;
+        rescheduleDisable.current = true;
         arrivedBtn.current.setAttribute('disabled', 'true');
     }
 
@@ -413,8 +439,8 @@ function DeliveryBookings()
         e.stopPropagation();
         
         try {
-            const col = collection(firebaseDB, 'deliveryBookings');
-            const d = doc(firebaseDB, 'deliveryBookings', selectedRow.current.id);
+            const col = collection(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings');
+            const d = doc(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings', selectedRow.current.id);
             await deleteDoc(d).then(() => {
                 console.log("Document", selectedRow.current.id, "deleted");
                 loadRecords(startDateRef.current);
@@ -433,7 +459,7 @@ function DeliveryBookings()
         e.preventDefault();
         e.stopPropagation();
         rescheduling.current = true;
-        datePicker.current.input.click();
+        dateTimePicker.current.input.click();
     }
 
     const onReloadBtnClick = async (e) => {
@@ -445,7 +471,7 @@ function DeliveryBookings()
         if(selectedRow.current !== undefined)
         {
             try {
-                const d = doc(firebaseDB, 'deliveryBookings', selectedRow.current.id);
+                const d = doc(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings', selectedRow.current.id);
                 const data = { arrived: !selectedRow.current.arrived };
                 await updateDoc(d, data).then(() => {
                     console.log("Document Updated Successfully - Arrived Toggle");
@@ -465,13 +491,14 @@ function DeliveryBookings()
         //@ts-ignore
         document.getElementById('deletebtn').onclick = onDeleteBtnClick;
         //@ts-ignore
-        document.getElementById('rescheduleBtn').onclick = onRescheduleBtnClick;
+        document.getElementById('rescheduleBtn').onclick = handleBookingReschedule;
         //@ts-ignore
         document.getElementById('arrivedBtn').onclick = onArrivedBtnClick;
         //@ts-ignore
         document.getElementById('reloadBtn').onclick = onReloadBtnClick;
 
     };
+    //<Button disabled variant="primary" id={'rescheduleBtn'} style={{margin: '30px'}} ref={rescheduleBtn} type={'submit'}>Reschedule</Button>
 
     // Render
     return(
@@ -501,9 +528,27 @@ function DeliveryBookings()
                             <span ref={totalPalletsForDate}></span>
                         </div>
                         <Button disabled variant="danger" id={'deletebtn'} style={{margin: '30px'}} ref={deleteRowBtn} type={'submit'}>Delete</Button>
-                        <Button disabled variant="primary" id={'rescheduleBtn'} style={{margin: '30px'}} ref={rescheduleBtn} type={'submit'}>Reschedule</Button>
+                        
+                        <div style={{display: 'inline-block'}}>
+                            <DatePicker
+                                    id={'rescheduleDateTimePicker'}
+                                    ref={dateTimePicker}
+                                    selected={selectedBookingDate}
+                                    disabled={(selectedRow.current ? false : true)}
+                                    showTimeSelect
+                                    dateFormat="yyyy-MM-dd hh:mm"
+                                    onChange={(e) => {setselectedBookingDate(e); selectedBookingDateRef.current = e}}
+                                    onCalendarClose={(e) => handleBookingReschedule(e)}
+                                    customInput={<DateTimeRescheduleButton />}
+                                    todayButton="Today"
+                                    withPortal
+                                    
+                                />
+                        </div>
+                        
                         <Button disabled variant="success" id={'arrivedBtn'} style={{margin: '30px'}} ref={arrivedBtn} type={'submit'}>Toggle Arrived</Button>
                         <Button variant="warning" id={'reloadBtn'} style={{margin: '30px'}} ref={reloadBtn} type={'submit'}>Reload Records</Button>
+                        
                         <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
                             <div ref={recordTableRef} className="ag-theme-alpine, bookingGrid" style={{height: 500, width: 1000}}>
                                 <AgGridReact
