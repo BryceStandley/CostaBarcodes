@@ -76,6 +76,7 @@ function DeliveryBookings()
     const isPortrait = useMediaQuery({ query: '(orientation: portrait)' })
     const isRetina = useMediaQuery({ query: '(min-resolution: 2dppx)' })
 
+    
     // AG Grid API ref
     const gridRef = useRef<any>({});
 
@@ -114,6 +115,13 @@ function DeliveryBookings()
             
         },
         {
+            headerName: 'Transport',
+            field: 'transport',
+            editable: true,
+            valueFormatter: formatter as any,
+        },
+        {
+            headerName: 'Delivery/Vendor',
             field: 'deliveryName',
             editable: true,
             valueFormatter: formatter as any,
@@ -146,6 +154,14 @@ function DeliveryBookings()
         {
             return 'PO or Description...';
         }
+        if(colDef.field === 'deliveryName')
+        {
+            return 'GROVE/JUICE VENTURE...';
+        }
+        if(colDef.field === 'transport')
+        {
+            return 'LINFOX...';
+        }
 
         if(colDef.field === 'pallets')
         {
@@ -163,7 +179,7 @@ function DeliveryBookings()
         {
             return true;
         }
-        else if(tempRow['time'] && tempRow['deliveryName'] && tempRow['pallets'])
+        else if(tempRow['time'] && tempRow['transport'] && tempRow['deliveryName'] && tempRow['pallets'])
         {
             return true;
         }
@@ -181,6 +197,7 @@ function DeliveryBookings()
 
     // Cell Clicked event
     const cellClickedListener = useCallback( event => {
+        console.log("Cell Clicked");
         if(event.rowPinned !== undefined) return;
 
         const row = event.api.getSelectedRows()[0];
@@ -206,10 +223,9 @@ function DeliveryBookings()
     //@ts-ignore
     const defaultColDef = useMemo( ()=> ({
         sortable: true,
-        resizeable: true,
-        width: 984 / 4,
+        resizable: true,
+        width: 1000 / 5,
         cellStyle: {justifyContent: 'center'},
-        suppressHorizontalScroll: true,
     }));
 
     function sizeToFit() {
@@ -266,6 +282,7 @@ function DeliveryBookings()
                     data['date'] = moment(startDateRef.current).format('L');
                     data['arrived'] = false;
                     data['time'] = convertTime(data['time']);
+                    data['transport'] = data['transport'].toUpperCase();
                     data['deliveryName'] = data['deliveryName'].toUpperCase();
                     data['purchaseOrder'] = data['purchaseOrder'].toUpperCase();
                     let dt = moment(startDateRef.current).format('L');
@@ -298,7 +315,7 @@ function DeliveryBookings()
             //Update firebase record
             try {
                 const d = doc(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings', e.data.id);
-                const data = { time: convertTime(e.data.time), deliveryName: e.data.deliveryName.toUpperCase(), purchaseOrder: e.data.purchaseOrder.toUpperCase(), pallets: e.data.pallets };
+                const data = { time: convertTime(e.data.time), transport: e.data.transport.toUpperCase(), deliveryName: e.data.deliveryName.toUpperCase(), purchaseOrder: e.data.purchaseOrder.toUpperCase(), pallets: e.data.pallets };
                 await updateDoc(d, data).then(() => {
                     console.log("Document Updated Successfully");
                     loadRecords(startDateRef.current);
@@ -550,7 +567,7 @@ function DeliveryBookings()
                         <Button variant="warning" id={'reloadBtn'} style={{margin: '30px'}} ref={reloadBtn} type={'submit'}>Reload Records</Button>
                         
                         <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-                            <div ref={recordTableRef} className="ag-theme-alpine, bookingGrid" style={{height: 500, width: 1000}}>
+                            <div ref={recordTableRef} className="ag-theme-alpine, bookingGrid" style={{height: 550, width: 1002}}>
                                 <AgGridReact
 
                                     ref={gridRef}
