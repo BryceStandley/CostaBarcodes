@@ -179,7 +179,7 @@ function DeliveryBookings()
         {
             return true;
         }
-        else if(tempRow['time'] && tempRow['transport'] && tempRow['deliveryName'] && tempRow['pallets'])
+        else if(tempRow['time'] && tempRow['deliveryName'] && tempRow['pallets'])
         {
             return true;
         }
@@ -585,7 +585,7 @@ function DeliveryBookings()
                                     
                                     getRowStyle={getRowStyle}
                                     getRowClass={getRowClass}
-
+                                    
                                     rowClassRules={rowClassRules}
 
                                     onRowEditingStopped={onRowEditingStopped}
