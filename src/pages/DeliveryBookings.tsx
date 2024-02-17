@@ -61,14 +61,21 @@ function DeliveryBookings()
     });
     
     const selectedRow = useRef<any>(undefined);
+    const editingRowIndex = useRef<any>(undefined);
     const recordTableRef = useRef<HTMLDivElement>(null!);
-    const [rowData, setRowData] = useState<any>(null);
+    const [rowData, setRowData] = useState<any>([]);
     const [tempRow, setTempRow] = useState({});
     const datePicker = useRef<DatePicker>(null!);
     const dateTimePicker = useRef<DatePicker>(null!);
     const rescheduling = useRef<boolean>(false);
     const totalPalletsForDate = useRef<HTMLSpanElement>(null!);
     const [editing, setEditing] = useState<boolean>(false);
+
+    const [totalPallets, setTotalPallets] = useState<string>('');
+    const [totalReceived, setTotalReceived] = useState<string>('');
+    const [totalRemaining, setTotalRemaining] = useState<string>('');
+    const [totalUnconfirmed, setTotalUnconfirmed] = useState<string>('');
+    const [totalConfirmed, setTotalConfirmed] = useState<string>('');
 
     const isDesktopOrLaptop = useMediaQuery({query: '(min-width: 1224px)'})
     const isBigScreen = useMediaQuery({ query: '(min-width: 1824px)' })
@@ -197,7 +204,7 @@ function DeliveryBookings()
 
     // Cell Clicked event
     const cellClickedListener = useCallback( event => {
-        console.log("Cell Clicked");
+        //console.log("Cell Clicked");
         if(event.rowPinned !== undefined) return;
 
         const row = event.api.getSelectedRows()[0];
@@ -262,6 +269,7 @@ function DeliveryBookings()
     const onRowEditingStarted = useCallback(async (params) => 
     {
         setEditing(true);
+        
     },
     [rowData, tempRow]
     );
@@ -274,7 +282,7 @@ function DeliveryBookings()
             if (isPinnedRowDataCompleted(params)) 
             {
                 setEditing(false);
-                
+                console.log(tempRow);
                 const col = collection(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings');
                 // Insert new record
                 try {
@@ -282,7 +290,7 @@ function DeliveryBookings()
                     data['date'] = moment(startDateRef.current).format('L');
                     data['arrived'] = false;
                     data['time'] = convertTime(data['time']);
-                    data['transport'] = data['transport'].toUpperCase();
+                    data['transport'] = data['transport'] ===  undefined ? '' : data['transport'].toUpperCase();
                     data['deliveryName'] = data['deliveryName'].toUpperCase();
                     data['purchaseOrder'] = data['purchaseOrder'].toUpperCase();
                     let dt = moment(startDateRef.current).format('L');
@@ -297,6 +305,7 @@ function DeliveryBookings()
                     });
                     setRowData([...rowData, tempRow]);
                     setTempRow({});
+                    loadRecords(startDateRef.current);
                 }
                 catch (error) {
                     console.error(error);
@@ -368,6 +377,7 @@ function DeliveryBookings()
             let lst: any = [];
             let total = 0;
             let totArr = 0;
+            let totUnConf = 0;
             snapshot.docs.forEach((doc) => {
                 let d = doc.data();
                 d.id = doc.id;
@@ -383,16 +393,27 @@ function DeliveryBookings()
                     {
                         totArr += i;
                     }
+                    //console.log(d.transport);
+                    if(d.transport === undefined)
+                    {
+                        totUnConf += i;
+                    }
                 }
             });
             setRowData(lst);
-            totalPalletsForDate.current.innerHTML = "";
-            const t = isDesktopOrLaptop ? '<span class=\'totalsSpans\'>Total Pallets: <span class=\'totalsSpansNumber\'>' + total.toString() + '</span></span>' : '<p class=\'totalsSpans\'>Total Pallets: <span class=\'totalsSpansNumber\'>' + total.toString() + '</span></p>' ;
-            const a = isDesktopOrLaptop ? '<span class=\'totalsSpans\'>Total Arrived: <span class=\'totalsSpansNumber\'>' + totArr.toString() + '</span></span>' : '<p class=\'totalsSpans\'>Total Arrived: <span class=\'totalsSpansNumber\'>' + totArr.toString() + '</span></p>';
-            const r = isDesktopOrLaptop ? '<span class=\'totalsSpans\'>Total Remaining: <span class=\'totalsSpansNumber\'>' + (total - totArr).toString() + '</span></span>' : '<p class=\'totalsSpans\'>Total Remaining: <span class=\'totalsSpansNumber\'>' + (total - totArr).toString() + '</span></p>';
+
+            setTotalPallets(total.toString());
+            setTotalReceived(totArr.toString());
+            setTotalRemaining((total - totArr).toString());
+            setTotalUnconfirmed(totUnConf.toString());
+            setTotalConfirmed((total - totUnConf).toString());
+            ///totalPalletsForDate.current.innerHTML = "";
+            ///const t = isDesktopOrLaptop ? '<span class=\'totalsSpans\'>Total Pallets: <span class=\'totalsSpansNumber\'>' + total.toString() + '</span></span>' : '<p class=\'totalsSpans\'>Total Pallets: <span class=\'totalsSpansNumber\'>' + total.toString() + '</span></p>' ;
+            ///const a = isDesktopOrLaptop ? '<span class=\'totalsSpans\'>Total Arrived: <span class=\'totalsSpansNumber\'>' + totArr.toString() + '</span></span>' : '<p class=\'totalsSpans\'>Total Arrived: <span class=\'totalsSpansNumber\'>' + totArr.toString() + '</span></p>';
+            ///const r = isDesktopOrLaptop ? '<span class=\'totalsSpans\'>Total Remaining: <span class=\'totalsSpansNumber\'>' + (total - totArr).toString() + '</span></span>' : '<p class=\'totalsSpans\'>Total Remaining: <span class=\'totalsSpansNumber\'>' + (total - totArr).toString() + '</span></p>';
 
 
-            totalPalletsForDate.current.innerHTML = t + a + r;
+            ///totalPalletsForDate.current.innerHTML = t + a + r;
 
             sizeToFit();
             //totalPalletsForDate.current.innerText = "Total Pallets: " + total.toString() + "    |    Total Arrived: " + totArr.toString() + '&nbsp;' +"|      Total Remaining: " + (total - totArr).toString();
@@ -503,8 +524,9 @@ function DeliveryBookings()
         }
     }
 
-    const onGridReady = async () => {
+    const onGridReady = useCallback(async () => {
         await loadRecords(new Date());
+        //setRowData([])
         //@ts-ignore
         document.getElementById('deletebtn').onclick = onDeleteBtnClick;
         //@ts-ignore
@@ -514,8 +536,29 @@ function DeliveryBookings()
         //@ts-ignore
         document.getElementById('reloadBtn').onclick = onReloadBtnClick;
 
-    };
+    },[]);
     //<Button disabled variant="primary" id={'rescheduleBtn'} style={{margin: '30px'}} ref={rescheduleBtn} type={'submit'}>Reschedule</Button>
+
+    const onCellEditingStarted = useCallback((e) => {
+        console.log("cell editing started");
+        // check whether the current row is already opened in edit or not
+        //if(editingRowIndex.current != e.rowIndex) {
+        //    console.log(e);
+        //    console.log(e.rowIndex);
+        //    console.log(e.column.colId);
+        //    e.api.startEditingCell({
+        //    rowIndex: e.rowIndex,
+        //    colKey: e.column.colId
+        //    });
+        //    editingRowIndex.current = e.rowIndex;
+        //    console.log(editingRowIndex.current);
+       // }
+    },[])
+
+    const onCellEditingStoped = useCallback((e) => {
+        console.log("cell editing stopped");
+        //console.log(e);
+    },[])
 
     // Render
     return(
@@ -529,6 +572,7 @@ function DeliveryBookings()
                         <h1>Delivery Bookings</h1>
                         <hr/>
                         <p>Create & Manage delivery bookings</p>
+                        <em>Note: Booking is Unconfirmed if no Transport is entered</em>
 						<div ref={contentDivRef}>
                             <DatePicker
                                 id={'datePickler'}
@@ -542,7 +586,26 @@ function DeliveryBookings()
                             />
                         </div>
                         <div>
-                            <span ref={totalPalletsForDate}></span>
+                            <span ref={totalPalletsForDate}>
+                                {isDesktopOrLaptop &&
+                                    <div>
+                                        <span className="totalsSpans">Pallets: <span className="totalsSpansNumber">{totalPallets} </span></span>
+                                        <span className="totalsSpans">Unconfirmed: <span className="totalsSpansNumber">{totalUnconfirmed} </span></span>
+                                        <span className="totalsSpans">Confirmed: <span className="totalsSpansNumber">{totalConfirmed} </span></span>
+                                        <span className="totalsSpans">Arrived: <span className="totalsSpansNumber">{totalReceived}</span></span>
+                                        <span className="totalsSpans">Remaining: <span className="totalsSpansNumber">{totalRemaining}</span></span>
+                                    </div>
+                                }
+                                {isTabletOrMobile &&
+                                    <div>
+                                        <p className="totalsSpansMobile">Pallets: <span className="totalsSpansNumber">{totalPallets}</span></p>
+                                        <p className="totalsSpansMobile">Unconfirmed: <span className="totalsSpansNumber">{totalUnconfirmed}</span></p>
+                                        <p className="totalsSpansMobile">Confirmed: <span className="totalsSpansNumber">{totalConfirmed}</span></p>
+                                        <p className="totalsSpansMobile">Arrived: <span className="totalsSpansNumber">{totalReceived}</span></p>
+                                        <p className="totalsSpansMobile">Remaining: <span className="totalsSpansNumber">{totalRemaining}</span></p>
+                                    </div>
+                                }
+                            </span>
                         </div>
                         <Button disabled variant="danger" id={'deletebtn'} style={{margin: '30px'}} ref={deleteRowBtn} type={'submit'}>Delete</Button>
                         
@@ -587,6 +650,9 @@ function DeliveryBookings()
                                     getRowClass={getRowClass}
                                     
                                     rowClassRules={rowClassRules}
+
+                                    onCellEditingStarted={onCellEditingStarted}
+                                    onCellEditingStopped={onCellEditingStoped}
 
                                     onRowEditingStopped={onRowEditingStopped}
                                     onRowValueChanged={onRowValueChanged}

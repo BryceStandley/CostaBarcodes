@@ -9,6 +9,10 @@
   padding-left: 50px;
 }
 
+.totalsSpansMobile {
+  padding-left: 0px;
+}
+
 .totalsSpansNumber {
   font-weight: bold;
 }
