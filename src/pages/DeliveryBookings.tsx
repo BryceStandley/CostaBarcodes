@@ -394,7 +394,7 @@ function DeliveryBookings()
                         totArr += i;
                     }
                     //console.log(d.transport);
-                    if(d.transport === undefined)
+                    if(d.transport === undefined || d.transport === '')
                     {
                         totUnConf += i;
                     }
