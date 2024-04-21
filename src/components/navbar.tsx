@@ -79,7 +79,7 @@ function NavigationBar()
                     <li className='nav-item'>
                         <Link className='nav-link text-white' to='/ltbarcode'>
                             <FontAwesomeIcon icon={faBarcode} style={{paddingRight: '10px'}} />
-                            Lt. Barcode
+                            Barcode Gen
                         </Link>
                     </li>
                 </ul>

@@ -282,7 +282,6 @@ function DeliveryBookings()
             if (isPinnedRowDataCompleted(params)) 
             {
                 setEditing(false);
-                console.log(tempRow);
                 const col = collection(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings');
                 // Insert new record
                 try {
@@ -290,14 +289,14 @@ function DeliveryBookings()
                     data['date'] = moment(startDateRef.current).format('L');
                     data['arrived'] = false;
                     data['time'] = convertTime(data['time']);
-                    data['transport'] = data['transport'] ===  undefined ? '' : data['transport'].toUpperCase();
+                    data['transport'] = data['transport'] ===  undefined ? null : data['transport'].toUpperCase();
                     data['deliveryName'] = data['deliveryName'].toUpperCase();
                     data['purchaseOrder'] = data['purchaseOrder'].toUpperCase();
                     let dt = moment(startDateRef.current).format('L');
                     dt += " " + data['time'];
                     data['datetime'] = moment(dt, 'DD/MM/YYYY hhmm').format('YYYY-MM-DDThh:mm:ss');
                     await addDoc(col, tempRow).then(doc => {
-                        console.log("Document Added Successfully with ID: ", doc.id);
+                        //console.log("Document Added Successfully with ID: ", doc.id);
                         tempRow['date'] = moment(startDateRef.current).format('L');
                         tempRow['id'] = doc.id;
                         tempRow['arrived'] = false;
@@ -324,9 +323,9 @@ function DeliveryBookings()
             //Update firebase record
             try {
                 const d = doc(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings', e.data.id);
-                const data = { time: convertTime(e.data.time), transport: e.data.transport.toUpperCase(), deliveryName: e.data.deliveryName.toUpperCase(), purchaseOrder: e.data.purchaseOrder.toUpperCase(), pallets: e.data.pallets };
+                const data = { time: convertTime(e.data.time), transport: e.data.transport === null ? null : e.data.transport.toUpperCase(), deliveryName: e.data.deliveryName.toUpperCase(), purchaseOrder: e.data.purchaseOrder.toUpperCase(), pallets: e.data.pallets };
                 await updateDoc(d, data).then(() => {
-                    console.log("Document Updated Successfully");
+                    //console.log("Document Updated Successfully");
                     loadRecords(startDateRef.current);
                     selectedRow.current = undefined;
                     disableBtns();
@@ -394,7 +393,7 @@ function DeliveryBookings()
                         totArr += i;
                     }
                     //console.log(d.transport);
-                    if(d.transport === undefined || d.transport === '')
+                    if(d.transport === undefined || d.transport === '' || d.transport === null)
                     {
                         totUnConf += i;
                     }
@@ -431,7 +430,7 @@ function DeliveryBookings()
 
     // Date selection changed handler
     const handleBookingReschedule = useCallback(async (e) => {
-        console.log(selectedBookingDateRef.current)
+        //console.log(selectedBookingDateRef.current)
         if(selectedRow.current !== undefined && selectedBookingDateRef.current !== selectedRow.current.datetime)
         {
             //Reschedule to selected date/time and reload to current date set
@@ -440,7 +439,7 @@ function DeliveryBookings()
                 const d = doc(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings', selectedRow.current.id);
                 const data = { date: moment(selectedBookingDateRef.current).format('L'), time: moment(selectedBookingDateRef.current).format('hhmm'), datetime: moment(selectedBookingDateRef.current).format('YYYY-MM-DD hh:mm')};
                 await updateDoc(d, data).then(() => {
-                    console.log("Document Rescheduled Successfully");
+                    //console.log("Document Rescheduled Successfully");
                     loadRecords(startDateRef.current);
                     selectedRow.current = undefined;
                     disableBtns();
@@ -480,7 +479,7 @@ function DeliveryBookings()
             const col = collection(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings');
             const d = doc(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings', selectedRow.current.id);
             await deleteDoc(d).then(() => {
-                console.log("Document", selectedRow.current.id, "deleted");
+                //console.log("Document", selectedRow.current.id, "deleted");
                 loadRecords(startDateRef.current);
                 selectedRow.current = undefined;
                 disableBtns();
@@ -512,7 +511,7 @@ function DeliveryBookings()
                 const d = doc(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings', selectedRow.current.id);
                 const data = { arrived: !selectedRow.current.arrived };
                 await updateDoc(d, data).then(() => {
-                    console.log("Document Updated Successfully - Arrived Toggle");
+                    //console.log("Document Updated Successfully - Arrived Toggle");
                     loadRecords(startDateRef.current);
                     selectedRow.current = undefined;
                     disableBtns();
@@ -540,7 +539,7 @@ function DeliveryBookings()
     //<Button disabled variant="primary" id={'rescheduleBtn'} style={{margin: '30px'}} ref={rescheduleBtn} type={'submit'}>Reschedule</Button>
 
     const onCellEditingStarted = useCallback((e) => {
-        console.log("cell editing started");
+        //console.log("cell editing started");
         // check whether the current row is already opened in edit or not
         //if(editingRowIndex.current != e.rowIndex) {
         //    console.log(e);
@@ -556,7 +555,7 @@ function DeliveryBookings()
     },[])
 
     const onCellEditingStoped = useCallback((e) => {
-        console.log("cell editing stopped");
+        //console.log("cell editing stopped");
         //console.log(e);
     },[])
 

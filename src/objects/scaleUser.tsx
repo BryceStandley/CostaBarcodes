@@ -15,12 +15,15 @@ class ScaleUser
 
         if(!username.includes("@"))
         {
+            //Assume a username without a domain is a costas.local user
             un += "@costas.local";
             n = username;
         }
         else
         {
-            n = username.replace("@costas.local", "");
+            let name = username !== "" ? username.split('@')[0] : 'Unknown';
+            n = name;
+            //n = username.replace("@costas.local", "");
         }
 
 
@@ -35,7 +38,7 @@ class ScaleUser
         //console.log(nameTemp);
         this.name = nameTemp.slice(0, -1);
 
-        this.qrData = un + '^TAB' + password;
+        this.qrData = un + '\t' + password;
     }
 
 }
