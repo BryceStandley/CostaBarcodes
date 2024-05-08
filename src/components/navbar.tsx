@@ -88,21 +88,27 @@ function NavigationBar()
                         <div className='flex-column'>
                             Version
                             <strong style={{paddingLeft: '20px'}}>
-                                
-                                {process.env.REACT_APP_VERSION}
+                                {process.env.REACT_APP_IS_PROD === '1' ? latestRepoStats.latestCommit?.Title : process.env.REACT_APP_VERSION + ' DEV'}
                             </strong>
                         </div>
                         <div className='flex-column'>
                                 Updated
                                 <strong style={{paddingLeft: '22px'}}>
-                                    {latestRepoStats.latestCommit?.Date}
+                                    {process.env.REACT_APP_IS_PROD === '1' ? latestRepoStats.latestCommit?.Date : new Date().toDateString() + ' DEV'}
                                 </strong>
                         </div>
                         <div className='flex-column'>
                                 Commit
                             <strong style={{paddingLeft: '32px'}}>
-                                <a className='nav-link d-inline' href={latestRepoStats.latestCommit?.URL} target="_blank" rel="noopener noreferrer" style={{color: '#06d6a0'}}>
-                                    {"#" +latestRepoStats.latestCommit?.SHA}
+                                <a className='nav-link d-inline' href={process.env.REACT_APP_IS_PROD === '1' ? latestRepoStats.latestCommit?.URL : '#'} target="_blank" rel="noopener noreferrer" style={{color: '#06d6a0'}}>
+                                    {process.env.REACT_APP_IS_PROD === '1' ? "#" +latestRepoStats.latestCommit?.SHA : 'DEV'}
+                                </a>
+                            </strong>
+                        </div>
+                        <div className='flex-column'>
+                            <strong style={{paddingLeft: '32px'}}>
+                                <a className='nav-link d-inline' href={process.env.REACT_APP_IS_PROD === '1' ? latestRepoStats.latestCommit?.URL : '#'} target="_blank" rel="noopener noreferrer" style={{color: '#06d6a0'}}>
+                                    {process.env.REACT_APP_IS_PROD === '1' ? 'Change Log' : 'Change Log - DEV'}
                                 </a>
                             </strong>
                         </div>
@@ -114,7 +120,7 @@ function NavigationBar()
                         <div className='flex-column'>
                             <strong>
                                 <a className='nav-link text-white d-inline' href='https://github.com/BryceStandley' target="_blank" rel="noopener noreferrer">
-                                    &copy; 2023 - Bryce Standley
+                                    &copy; 2024 - Bryce Standley
                                     <FontAwesomeIcon icon={faGithub} style={{paddingLeft: '10px'}} />
                                 </a>
                             </strong>

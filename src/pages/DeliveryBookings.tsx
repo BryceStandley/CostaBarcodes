@@ -5,7 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarDay, faL } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core'
-
+import { Tooltip } from 'react-tooltip'
 import { AgGridReact } from 'ag-grid-react';
 
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
@@ -52,12 +52,13 @@ function DeliveryBookings()
     const rescheduleBtn = useRef<HTMLButtonElement>(null!);
     const arrivedBtn = useRef<HTMLButtonElement>(null!);
     const reloadBtn = useRef<HTMLButtonElement>(null!);
+    const copyBtn = useRef<HTMLButtonElement>(null!);
 
     const DatePickerButton = forwardRef<HTMLButtonElement>((props: any, ref) => {
-        return <Button variant="success" style={{margin: '30px'}} ref={ref} onClick={props.onClick} type="submit"><FontAwesomeIcon icon={faCalendarDay} style={{paddingRight: '10px'}}/>{props.value}</Button>
+        return <Button className='selectDateButton' variant="success" style={{margin: '30px'}} ref={ref} onClick={props.onClick} type="submit"><FontAwesomeIcon icon={faCalendarDay} style={{paddingRight: '10px'}}/>{props.value}</Button>
     });
     const DateTimeRescheduleButton = forwardRef<HTMLButtonElement>((props: any, ref) => {
-        return <Button disabled={props.disabled} id="rescheduleBtn" variant="primary" style={{margin: '30px'}} ref={ref} onClick={props.onClick} type="submit"><FontAwesomeIcon icon={faCalendarDay} style={{paddingRight: '10px'}}/>Reschedule</Button>
+        return <Button className='rescheduleButton' disabled={props.disabled} id="rescheduleBtn" variant="primary" style={{margin: '30px'}} ref={ref} onClick={props.onClick} type="submit"><FontAwesomeIcon icon={faCalendarDay} style={{paddingRight: '10px'}}/>Reschedule</Button>
     });
     
     const selectedRow = useRef<any>(undefined);
@@ -295,7 +296,7 @@ function DeliveryBookings()
                     let dt = moment(startDateRef.current).format('L');
                     dt += " " + data['time'];
                     data['datetime'] = moment(dt, 'DD/MM/YYYY hhmm').format('YYYY-MM-DDThh:mm:ss');
-                    await addDoc(col, tempRow).then(doc => {
+                    await addDoc(col, data).then(doc => {
                         //console.log("Document Added Successfully with ID: ", doc.id);
                         tempRow['date'] = moment(startDateRef.current).format('L');
                         tempRow['id'] = doc.id;
@@ -459,6 +460,7 @@ function DeliveryBookings()
         dateTimePicker.current.disabled = false;
         rescheduleDisable.current = false;
         arrivedBtn.current.removeAttribute('disabled');
+        copyBtn.current.removeAttribute('disabled');
     }
 
     // Disable Buttons
@@ -468,6 +470,7 @@ function DeliveryBookings()
         dateTimePicker.current.disabled = true;
         rescheduleDisable.current = true;
         arrivedBtn.current.setAttribute('disabled', 'true');
+        copyBtn.current.setAttribute('disabled', 'true');
     }
 
     // Delete Selected Row
@@ -476,7 +479,7 @@ function DeliveryBookings()
         e.stopPropagation();
         
         try {
-            const col = collection(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings');
+            //const col = collection(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings');
             const d = doc(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings', selectedRow.current.id);
             await deleteDoc(d).then(() => {
                 //console.log("Document", selectedRow.current.id, "deleted");
@@ -499,12 +502,43 @@ function DeliveryBookings()
         dateTimePicker.current.input.click();
     }
 
+    // Reload Records Button Click Event
     const onReloadBtnClick = async (e) => {
         handleDateChanged(startDateRef.current);
     }
 
+    // Copy Record Button Click Event - Currently duplicates the record that then can be rescheduled to a different day
+    const onCopyBtnClick =  async (e) => {
+        if(selectedRow.current !== undefined)
+            {
+                //Duplicate to selected booking and reload
+                try {
+                    const col = collection(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings');
+                    let data = {
+                        date: selectedRow.current.date,
+                        time: selectedRow.current.time,
+                        datetime: selectedRow.current.datetime,
+                        arrived: selectedRow.current.arrived,
+                        transport: selectedRow.current.transport,
+                        deliveryName: selectedRow.current.deliveryName,
+                        purchaseOrder: selectedRow.current.purchaseOrder,
+                        pallets: selectedRow.current.pallets
+                    }
+                    await addDoc(col, data).then(() => {
+                        handleDateChanged(startDateRef.current);
+                        selectedRow.current = undefined;
+                        disableBtns();
+                    });
+                }
+                catch (error) {
+                    console.error(error);
+                }
+            }
+    }
+
     // Toggle Arrived Button Click Event
     const onArrivedBtnClick = async (e) => {
+        console.log('duplicate');
         if(selectedRow.current !== undefined)
         {
             try {
@@ -524,19 +558,26 @@ function DeliveryBookings()
     }
 
     const onGridReady = useCallback(async () => {
-        await loadRecords(new Date());
-        //setRowData([])
-        //@ts-ignore
-        document.getElementById('deletebtn').onclick = onDeleteBtnClick;
-        //@ts-ignore
-        document.getElementById('rescheduleBtn').onclick = handleBookingReschedule;
-        //@ts-ignore
-        document.getElementById('arrivedBtn').onclick = onArrivedBtnClick;
-        //@ts-ignore
-        document.getElementById('reloadBtn').onclick = onReloadBtnClick;
+        await loadRecords(new Date()).then(() => {
+            //@ts-ignore
+            //document.getElementById('deletebtn').onclick = onDeleteBtnClick;
+            deleteRowBtn.current !== null ? deleteRowBtn.current.onclick = onDeleteBtnClick : console.log('Delete Button ref is null');
+            //@ts-ignore
+            //document.getElementById('rescheduleBtn').onclick = handleBookingReschedule;
+            rescheduleBtn.current !== null ? rescheduleBtn.current.onclick = handleBookingReschedule : console.log('Reschedule Button ref is null');
+            //@ts-ignore
+            //document.getElementById('arrivedBtn').onclick = onArrivedBtnClick;
+            arrivedBtn.current !== null ? arrivedBtn.current.onclick = onArrivedBtnClick : console.log('Arrived Button ref is null');
+            //@ts-ignore
+            //document.getElementById('reloadBtn').onclick = onReloadBtnClick;
+            reloadBtn.current !== null ? reloadBtn.current.onclick = onReloadBtnClick : console.log('Reload Button ref is null');
+            //@ts-ignore
+            //document.getElementById('copyBtn').onclick = onCopyBtnClick;
+            copyBtn.current !== null ? copyBtn.current.onclick = onCopyBtnClick : console.log('Copy Button ref is null');
+        })
+
 
     },[]);
-    //<Button disabled variant="primary" id={'rescheduleBtn'} style={{margin: '30px'}} ref={rescheduleBtn} type={'submit'}>Reschedule</Button>
 
     const onCellEditingStarted = useCallback((e) => {
         //console.log("cell editing started");
@@ -606,8 +647,8 @@ function DeliveryBookings()
                                 }
                             </span>
                         </div>
-                        <Button disabled variant="danger" id={'deletebtn'} style={{margin: '30px'}} ref={deleteRowBtn} type={'submit'}>Delete</Button>
-                        
+                        <Button className='deleteButton' disabled variant="danger" id={'deletebtn'} style={{margin: '30px'}} ref={deleteRowBtn} type={'submit'}>Delete</Button>
+                        <Button className='duplicateButton' disabled variant="info" id={'copybtn'} style={{margin: '30px'}} ref={copyBtn} type={'submit'}>Duplicate</Button>
                         <div style={{display: 'inline-block'}}>
                             <DatePicker
                                     id={'rescheduleDateTimePicker'}
@@ -615,19 +656,27 @@ function DeliveryBookings()
                                     selected={selectedBookingDate}
                                     disabled={(selectedRow.current ? false : true)}
                                     showTimeSelect
+                                    minTime={new Date(selectedBookingDate).setHours(4, 0)}
+                                    maxTime={new Date(selectedBookingDate).setHours(11, 30)}
                                     dateFormat="yyyy-MM-dd hh:mm"
                                     onChange={(e) => {setselectedBookingDate(e); selectedBookingDateRef.current = e}}
                                     onCalendarClose={(e) => handleBookingReschedule(e)}
                                     customInput={<DateTimeRescheduleButton />}
                                     todayButton="Today"
                                     withPortal
-                                    
                                 />
                         </div>
                         
-                        <Button disabled variant="success" id={'arrivedBtn'} style={{margin: '30px'}} ref={arrivedBtn} type={'submit'}>Toggle Arrived</Button>
-                        <Button variant="warning" id={'reloadBtn'} style={{margin: '30px'}} ref={reloadBtn} type={'submit'}>Reload Records</Button>
+                        <Button className='arrivedButton' disabled variant="success" id={'arrivedBtn'} style={{margin: '30px'}} ref={arrivedBtn} type={'submit'}>Toggle Arrived</Button>
+                        <Button className='reloadButton' variant="warning" id={'reloadBtn'} style={{margin: '30px'}} ref={reloadBtn} type={'submit'}>Reload Records</Button>
                         
+                        <Tooltip anchorSelect='.selectDateButton' place="top">Select the date of booking's</Tooltip>
+                        <Tooltip anchorSelect='.deleteButton' place="top">Delete selected booking</Tooltip>
+                        <Tooltip anchorSelect='.duplicateButton' place="top">Duplicate selected booking</Tooltip>
+                        <Tooltip anchorSelect='.rescheduleButton' place="top">Reschedule selected booking</Tooltip>
+                        <Tooltip anchorSelect='.arrivedButton' place="top">Toggle booking as arrived or not</Tooltip>
+                        <Tooltip anchorSelect='.reloadButton' place="top">Reload bookings for selected day</Tooltip>
+
                         <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
                             <div ref={recordTableRef} className="ag-theme-alpine, bookingGrid" style={{height: 550, width: 1002}}>
                                 <AgGridReact

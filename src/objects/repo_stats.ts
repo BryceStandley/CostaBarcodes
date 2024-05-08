@@ -22,8 +22,9 @@ class RepoStats {
 			if(res.data.length > 0)
 			{
 				const gh = res.data[0]; // latest commit from repo
+
 				const date = gh.commit.author.date.substring(0, 10);
-				const title = gh.commit.message;
+				const title = gh.commit.message.split('\n\n')[0];
 				const url = gh.html_url;
 				const sha = gh.sha.substring(0, 7);
 				commit = {Date: date, Title: title, URL: url, SHA: sha};
