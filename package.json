@@ -18,7 +18,7 @@
     "ag-grid-community": "^30.0.6",
     "ag-grid-react": "^30.0.6",
     "bootstrap": "^5.2.3",
-    "bwip-js": "^3.4.3",
+    "bwip-js": "^4.5.0",
     "cloudflare": "^0.0.8",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
