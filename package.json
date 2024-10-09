@@ -17,7 +17,7 @@
     "@types/react-dom": "^18.3.0",
     "ag-grid-community": "^32.0.1",
     "ag-grid-react": "^30.0.6",
-    "bootstrap": "^5.2.3",
+    "bootstrap": "^5.3.3",
     "bwip-js": "^3.4.3",
     "cloudflare": "^0.0.8",
     "dotenv": "^16.4.5",
