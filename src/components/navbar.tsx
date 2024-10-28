@@ -8,11 +8,10 @@ import latestRepoStats from 'objects/repo_stats'
 
 library.add(faHome, faFileAlt, faSignInAlt, faSignOutAlt, faLightbulb, faUser, faBarcode, faSignsPost, faGithub, faCalendarDay);
 
-function NavigationBar()
-{
+const NavigationBar: React.FC = () => {
 
     return (
-            <div className="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark text-center" style={{width: '280px', height: '110vh'}}>
+            <div className="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark text-center" style={{width: '280px', height: '1100px'}}>
                 <Link className='nav-link nav-brand' to="/worksheet">
                     <h3>
                         <strong>

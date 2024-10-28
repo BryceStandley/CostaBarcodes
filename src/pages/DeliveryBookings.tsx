@@ -1,9 +1,9 @@
-import React, {useRef, useState, forwardRef, ReactNode, ClipboardEvent, useEffect, useMemo, useCallback} from "react";
+import React, {useRef, useState, forwardRef, useMemo, useCallback} from "react";
 import { Button } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarDay, faL } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarDay } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { Tooltip } from 'react-tooltip'
 import { AgGridReact } from 'ag-grid-react';
@@ -62,13 +62,11 @@ function DeliveryBookings()
     });
     
     const selectedRow = useRef<any>(undefined);
-    const editingRowIndex = useRef<any>(undefined);
     const recordTableRef = useRef<HTMLDivElement>(null!);
     const [rowData, setRowData] = useState<any>([]);
     const [tempRow, setTempRow] = useState({});
     const datePicker = useRef<DatePicker>(null!);
     const dateTimePicker = useRef<DatePicker>(null!);
-    const rescheduling = useRef<boolean>(false);
     const totalPalletsForDate = useRef<HTMLSpanElement>(null!);
     const [editing, setEditing] = useState<boolean>(false);
 
@@ -79,11 +77,8 @@ function DeliveryBookings()
     const [totalConfirmed, setTotalConfirmed] = useState<string>('');
 
     const isDesktopOrLaptop = useMediaQuery({query: '(min-width: 1224px)'})
-    const isBigScreen = useMediaQuery({ query: '(min-width: 1824px)' })
-    const isTabletOrMobile = useMediaQuery({ query: '(max-width: 1224px)' })
-    const isPortrait = useMediaQuery({ query: '(orientation: portrait)' })
-    const isRetina = useMediaQuery({ query: '(min-resolution: 2dppx)' })
 
+    firebaseAnalytics.app.automaticDataCollectionEnabled = true;
     
     
     // AG Grid API ref
@@ -113,6 +108,48 @@ function DeliveryBookings()
         }
         
     }
+
+    // Load Records from firebase
+    const loadRecords = useCallback( async (date) => {
+        const col = collection(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings');
+        await getDocs(query(col, where('date', '==', moment(date).format('L')))).then((snapshot) => {
+            let lst: any = [];
+            let total = 0;
+            let totArr = 0;
+            let totUnConf = 0;
+            snapshot.docs.forEach((doc) => {
+                let d = doc.data();
+                d.id = doc.id;
+                let dt = moment(date).format('L');
+                dt += " " + d.time;
+                d.datetime = moment(dt, 'DD/MM/YYYY hhmm').format('YYYY-MM-DD hh:mm');
+                lst.push(d);
+                const i = parseInt(d.pallets);
+                if(!Number.isNaN(i))
+                {
+                    total += i
+                    if(d.arrived)
+                    {
+                        totArr += i;
+                    }
+                    //console.log(d.transport);
+                    if(d.transport === undefined || d.transport === '' || d.transport === null)
+                    {
+                        totUnConf += i;
+                    }
+                }
+            });
+            setRowData(lst);
+            setTotalPallets(total.toString());
+            setTotalReceived(totArr.toString());
+            setTotalRemaining((total - totArr).toString());
+            setTotalUnconfirmed(totUnConf.toString());
+            setTotalConfirmed((total - totUnConf).toString());
+            sizeToFit();
+        });
+    },[]);
+
+    
 
     // Each Column Definition results in one Column.
     const [columnDefs, setColumnDefs] = useState([
@@ -161,72 +198,45 @@ function DeliveryBookings()
     function createPinnedCellPlaceholder({ colDef }) {
         if(colDef.field === 'purchaseOrder')
         {
-            return 'PO or Description...';
+            return 'PO/Description...';
         }
         if(colDef.field === 'deliveryName')
         {
-            return 'GROVE/JUICE VENTURE...';
+            return 'VENDOR NAME...';
         }
         if(colDef.field === 'transport')
         {
-            return 'LINFOX...';
+            return 'TRANSPORT COMPANY...';
         }
 
         if(colDef.field === 'pallets')
         {
-            return '38...'
+            return 'PALLET COUNT...'
         }
 
-        return colDef.field[0].toUpperCase() + colDef.field.slice(1) + '...';
+        return colDef.field.toUpperCase() + '...';
     }
     
-    // Has the placeholder row data been completed
-    function isPinnedRowDataCompleted(params) {
-        if (params.rowPinned !== 'top') return;
-
-        if(columnDefs.every((def) => tempRow[def.field]))
-        {
-            return true;
-        }
-        else if(tempRow['time'] && tempRow['deliveryName'] && tempRow['pallets'])
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    // Has row data been updated
-    function hasRowDataChanged(params) {
-        if (params.rowPinned !== undefined) return;
-        return params.valueChanged;
-    }
 
     // Cell Clicked event
     const cellClickedListener = useCallback( event => {
-        //console.log("Cell Clicked");
         if(event.rowPinned !== undefined) return;
 
         const row = event.api.getSelectedRows()[0];
-        //console.log("Cell Clicked", row);
         if(row === undefined || editing)
         {
-            //setSelectedRow(undefined);
             selectedRow.current = undefined;
             disableBtns();
         }
         else
         {
-            //setSelectedRow(row);
             selectedRow.current = row;
             setselectedBookingDate(moment(row.datetime, 'YYYY-MM-DD hh:mm').toDate())
             selectedBookingDateRef.current = moment(row.datetime, 'YYYY-MM-DD hh:mm').toDate()
             enableBtns();
         }
 
-    }, []);
+    }, [selectedRow, editing]);
 
     // DefaultColDef sets props common to all Columns
     //@ts-ignore
@@ -272,13 +282,29 @@ function DeliveryBookings()
     {
         setEditing(true);
         
-    },
-    [rowData, tempRow]
-    );
+    },[]);
 
     // On Row Editing Stopped Event
     const onRowEditingStopped = useCallback(async (params) => 
     {
+        // Has the placeholder row data been completed
+        const isPinnedRowDataCompleted = (params) => {
+            if (params.rowPinned !== 'top') return;
+
+            if(columnDefs.every((def) => tempRow[def.field]))
+            {
+                return true;
+            }
+            else if(tempRow['time'] && tempRow['deliveryName'] && tempRow['pallets'])
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         if(params.rowPinned)
         {
             if (isPinnedRowDataCompleted(params)) 
@@ -314,9 +340,7 @@ function DeliveryBookings()
 
             }
         }
-    },
-    [rowData, tempRow]
-    );
+    },[rowData, tempRow, columnDefs, loadRecords]);
 
     const onRowValueChanged = useCallback(async (e) => {
         setEditing(false);
@@ -327,7 +351,6 @@ function DeliveryBookings()
                 const d = doc(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings', e.data.id);
                 const data = { time: convertTime(e.data.time), transport: e.data.transport === null ? null : e.data.transport.toUpperCase(), deliveryName: e.data.deliveryName.toUpperCase(), purchaseOrder: e.data.purchaseOrder.toUpperCase(), pallets: e.data.pallets };
                 await updateDoc(d, data).then(() => {
-                    //console.log("Document Updated Successfully");
                     loadRecords(startDateRef.current);
                     selectedRow.current = undefined;
                     disableBtns();
@@ -338,7 +361,7 @@ function DeliveryBookings()
                 console.error(error);
             }
         }
-    }, []);
+    }, [loadRecords]);
     
     //Converts a time string into the correct format
     function convertTime(time)
@@ -370,56 +393,7 @@ function DeliveryBookings()
         }
     }
 
-    // Load Records from firebase
-    async function loadRecords(date)
-    {
-        const col = collection(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings');
-        await getDocs(query(col, where('date', '==', moment(date).format('L')))).then((snapshot) => {
-            let lst: any = [];
-            let total = 0;
-            let totArr = 0;
-            let totUnConf = 0;
-            snapshot.docs.forEach((doc) => {
-                let d = doc.data();
-                d.id = doc.id;
-                let dt = moment(date).format('L');
-                dt += " " + d.time;
-                d.datetime = moment(dt, 'DD/MM/YYYY hhmm').format('YYYY-MM-DD hh:mm');
-                lst.push(d);
-                const i = parseInt(d.pallets);
-                if(!Number.isNaN(i))
-                {
-                    total += i
-                    if(d.arrived)
-                    {
-                        totArr += i;
-                    }
-                    //console.log(d.transport);
-                    if(d.transport === undefined || d.transport === '' || d.transport === null)
-                    {
-                        totUnConf += i;
-                    }
-                }
-            });
-            setRowData(lst);
-
-            setTotalPallets(total.toString());
-            setTotalReceived(totArr.toString());
-            setTotalRemaining((total - totArr).toString());
-            setTotalUnconfirmed(totUnConf.toString());
-            setTotalConfirmed((total - totUnConf).toString());
-            ///totalPalletsForDate.current.innerHTML = "";
-            ///const t = isDesktopOrLaptop ? '<span class=\'totalsSpans\'>Total Pallets: <span class=\'totalsSpansNumber\'>' + total.toString() + '</span></span>' : '<p class=\'totalsSpans\'>Total Pallets: <span class=\'totalsSpansNumber\'>' + total.toString() + '</span></p>' ;
-            ///const a = isDesktopOrLaptop ? '<span class=\'totalsSpans\'>Total Arrived: <span class=\'totalsSpansNumber\'>' + totArr.toString() + '</span></span>' : '<p class=\'totalsSpans\'>Total Arrived: <span class=\'totalsSpansNumber\'>' + totArr.toString() + '</span></p>';
-            ///const r = isDesktopOrLaptop ? '<span class=\'totalsSpans\'>Total Remaining: <span class=\'totalsSpansNumber\'>' + (total - totArr).toString() + '</span></span>' : '<p class=\'totalsSpans\'>Total Remaining: <span class=\'totalsSpansNumber\'>' + (total - totArr).toString() + '</span></p>';
-
-
-            ///totalPalletsForDate.current.innerHTML = t + a + r;
-
-            sizeToFit();
-            //totalPalletsForDate.current.innerText = "Total Pallets: " + total.toString() + "    |    Total Arrived: " + totArr.toString() + '&nbsp;' +"|      Total Remaining: " + (total - totArr).toString();
-        });
-    }
+    
 
     // Date selection changed handler
     const handleDateChanged = useCallback(async (e) => {
@@ -428,20 +402,16 @@ function DeliveryBookings()
         loadRecords(e);
         selectedRow.current = undefined;
         disableBtns(); 
-    },[]);
+    },[loadRecords]);
 
     // Date selection changed handler
     const handleBookingReschedule = useCallback(async (e) => {
-        //console.log(selectedBookingDateRef.current)
         if(selectedRow.current !== undefined && selectedBookingDateRef.current !== selectedRow.current.datetime)
         {
-            //Reschedule to selected date/time and reload to current date set
-            // Update Date/time
             try {
                 const d = doc(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings', selectedRow.current.id);
                 const data = { date: moment(selectedBookingDateRef.current).format('L'), time: moment(selectedBookingDateRef.current).format('hhmm'), datetime: moment(selectedBookingDateRef.current).format('YYYY-MM-DD hh:mm')};
                 await updateDoc(d, data).then(() => {
-                    //console.log("Document Rescheduled Successfully");
                     loadRecords(startDateRef.current);
                     selectedRow.current = undefined;
                     disableBtns();
@@ -451,8 +421,7 @@ function DeliveryBookings()
                 console.error(error);
             }
         }
- 
-    },[]);
+    },[loadRecords]);
 
     //Enable Buttons
     const enableBtns = () => {
@@ -474,8 +443,63 @@ function DeliveryBookings()
         copyBtn.current.setAttribute('disabled', 'true');
     }
 
-    // Delete Selected Row
-    const onDeleteBtnClick = async (e) => {
+    const onGridReady = useCallback(async () => {
+        // Toggle Arrived Button Click Event
+        const onArrivedBtnClick = async (e) => {
+            if(selectedRow.current !== undefined)
+            {
+                try {
+                    const d = doc(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings', selectedRow.current.id);
+                    const data = { arrived: !selectedRow.current.arrived };
+                    await updateDoc(d, data).then(() => {
+                        //console.log("Document Updated Successfully - Arrived Toggle");
+                        loadRecords(startDateRef.current);
+                        selectedRow.current = undefined;
+                        disableBtns();
+                    });
+                }
+                catch (error) {
+                    console.error(error);
+                }
+            }
+        }
+
+        // Copy Record Button Click Event - Currently duplicates the record that then can be rescheduled to a different day
+        const onCopyBtnClick =  async (e) => {
+            if(selectedRow.current !== undefined)
+                {
+                    //Duplicate to selected booking and reload
+                    try {
+                        const col = collection(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings');
+                        let data = {
+                            date: selectedRow.current.date,
+                            time: selectedRow.current.time,
+                            datetime: selectedRow.current.datetime,
+                            arrived: selectedRow.current.arrived,
+                            transport: selectedRow.current.transport,
+                            deliveryName: selectedRow.current.deliveryName,
+                            purchaseOrder: selectedRow.current.purchaseOrder,
+                            pallets: selectedRow.current.pallets
+                        }
+                        await addDoc(col, data).then(() => {
+                            handleDateChanged(startDateRef.current);
+                            selectedRow.current = undefined;
+                            disableBtns();
+                        });
+                    }
+                    catch (error) {
+                        console.error(error);
+                    }
+                }
+        }
+
+        // Reload Records Button Click Event
+        const onReloadBtnClick = async (e) => {
+            handleDateChanged(startDateRef.current);
+        }
+
+        // Delete Selected Row
+        const onDeleteBtnClick = async (e) => {
         e.preventDefault();
         e.stopPropagation();
         
@@ -495,115 +519,24 @@ function DeliveryBookings()
         
     }
 
-    // Reschedule Button Click Event
-    const onRescheduleBtnClick = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        rescheduling.current = true;
-        dateTimePicker.current.input.click();
-    }
-
-    // Reload Records Button Click Event
-    const onReloadBtnClick = async (e) => {
-        handleDateChanged(startDateRef.current);
-    }
-
-    // Copy Record Button Click Event - Currently duplicates the record that then can be rescheduled to a different day
-    const onCopyBtnClick =  async (e) => {
-        if(selectedRow.current !== undefined)
-            {
-                //Duplicate to selected booking and reload
-                try {
-                    const col = collection(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings');
-                    let data = {
-                        date: selectedRow.current.date,
-                        time: selectedRow.current.time,
-                        datetime: selectedRow.current.datetime,
-                        arrived: selectedRow.current.arrived,
-                        transport: selectedRow.current.transport,
-                        deliveryName: selectedRow.current.deliveryName,
-                        purchaseOrder: selectedRow.current.purchaseOrder,
-                        pallets: selectedRow.current.pallets
-                    }
-                    await addDoc(col, data).then(() => {
-                        handleDateChanged(startDateRef.current);
-                        selectedRow.current = undefined;
-                        disableBtns();
-                    });
-                }
-                catch (error) {
-                    console.error(error);
-                }
-            }
-    }
-
-    // Toggle Arrived Button Click Event
-    const onArrivedBtnClick = async (e) => {
-        console.log('duplicate');
-        if(selectedRow.current !== undefined)
-        {
-            try {
-                const d = doc(firebaseDB, process.env.REACT_APP_IS_PROD === '1' ? 'deliveryBookings' : 'dev_deliveryBookings', selectedRow.current.id);
-                const data = { arrived: !selectedRow.current.arrived };
-                await updateDoc(d, data).then(() => {
-                    //console.log("Document Updated Successfully - Arrived Toggle");
-                    loadRecords(startDateRef.current);
-                    selectedRow.current = undefined;
-                    disableBtns();
-                });
-            }
-            catch (error) {
-                console.error(error);
-            }
-        }
-    }
-
-    const onGridReady = useCallback(async () => {
         await loadRecords(new Date()).then(() => {
-            //@ts-ignore
-            //document.getElementById('deletebtn').onclick = onDeleteBtnClick;
-            deleteRowBtn.current !== null ? deleteRowBtn.current.onclick = onDeleteBtnClick : console.log('Delete Button ref is null');
-            //@ts-ignore
-            //document.getElementById('rescheduleBtn').onclick = handleBookingReschedule;
-            rescheduleBtn.current !== null ? rescheduleBtn.current.onclick = handleBookingReschedule : console.log('Reschedule Button ref is null');
-            //@ts-ignore
-            //document.getElementById('arrivedBtn').onclick = onArrivedBtnClick;
-            arrivedBtn.current !== null ? arrivedBtn.current.onclick = onArrivedBtnClick : console.log('Arrived Button ref is null');
-            //@ts-ignore
-            //document.getElementById('reloadBtn').onclick = onReloadBtnClick;
-            reloadBtn.current !== null ? reloadBtn.current.onclick = onReloadBtnClick : console.log('Reload Button ref is null');
-            //@ts-ignore
-            //document.getElementById('copyBtn').onclick = onCopyBtnClick;
-            copyBtn.current !== null ? copyBtn.current.onclick = onCopyBtnClick : console.log('Copy Button ref is null');
+            deleteRowBtn.current !== null ? deleteRowBtn.current.onclick = onDeleteBtnClick : console.warn('Delete Button ref is null');
+            rescheduleBtn.current !== null ? rescheduleBtn.current.onclick = handleBookingReschedule : console.warn('Reschedule Button ref is null');
+            arrivedBtn.current !== null ? arrivedBtn.current.onclick = onArrivedBtnClick : console.warn('Arrived Button ref is null');
+            reloadBtn.current !== null ? reloadBtn.current.onclick = onReloadBtnClick : console.warn('Reload Button ref is null');
+            copyBtn.current !== null ? copyBtn.current.onclick = onCopyBtnClick : console.warn('Copy Button ref is null');
         })
-
-
-    },[]);
+    },[loadRecords, handleBookingReschedule, handleDateChanged]);
 
     const onCellEditingStarted = useCallback((e) => {
-        //console.log("cell editing started");
-        // check whether the current row is already opened in edit or not
-        //if(editingRowIndex.current != e.rowIndex) {
-        //    console.log(e);
-        //    console.log(e.rowIndex);
-        //    console.log(e.column.colId);
-        //    e.api.startEditingCell({
-        //    rowIndex: e.rowIndex,
-        //    colKey: e.column.colId
-        //    });
-        //    editingRowIndex.current = e.rowIndex;
-        //    console.log(editingRowIndex.current);
-       // }
     },[])
 
     const onCellEditingStoped = useCallback((e) => {
-        //console.log("cell editing stopped");
-        //console.log(e);
     },[])
 
     // Render
     return(
-            <div>
+            <div className={"pageContainer"}>
                 <div style={{
                     textAlign: 'center',
                     margin: '30px',
@@ -628,7 +561,7 @@ function DeliveryBookings()
                         </div>
                         <div>
                             <span ref={totalPalletsForDate}>
-                                {isDesktopOrLaptop &&
+                                {isDesktopOrLaptop ?
                                     <div>
                                         <span className="totalsSpans">Pallets: <span className="totalsSpansNumber">{totalPallets} </span></span>
                                         <span className="totalsSpans">Unconfirmed: <span className="totalsSpansNumber">{totalUnconfirmed} </span></span>
@@ -636,8 +569,7 @@ function DeliveryBookings()
                                         <span className="totalsSpans">Arrived: <span className="totalsSpansNumber">{totalReceived}</span></span>
                                         <span className="totalsSpans">Remaining: <span className="totalsSpansNumber">{totalRemaining}</span></span>
                                     </div>
-                                }
-                                {isTabletOrMobile &&
+                                : 
                                     <div>
                                         <p className="totalsSpansMobile">Pallets: <span className="totalsSpansNumber">{totalPallets}</span></p>
                                         <p className="totalsSpansMobile">Unconfirmed: <span className="totalsSpansNumber">{totalUnconfirmed}</span></p>
@@ -681,7 +613,6 @@ function DeliveryBookings()
                         <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
                             <div ref={recordTableRef} className="ag-theme-alpine, bookingGrid" style={{height: 550, width: 1002}}>
                                 <AgGridReact
-
                                     ref={gridRef}
                                     rowData={rowData}
                                     
