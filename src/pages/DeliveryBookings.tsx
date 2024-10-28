@@ -80,7 +80,6 @@ function DeliveryBookings()
 
     firebaseAnalytics.app.automaticDataCollectionEnabled = true;
     
-    
     // AG Grid API ref
     const gridRef = useRef<any>({});
 
