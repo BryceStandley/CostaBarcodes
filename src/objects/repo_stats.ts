@@ -32,7 +32,7 @@ class RepoStats {
 		}
 		else
 		{
-			commit = {Date: 'Unknown', Title: '0.0.0', URL: 'https://github.com/brycestandley/costabarcodes', SHA: 'NONE'}
+			commit = {Date: Date.now.toString, Title: 'Unknown', URL: 'https://github.com/brycestandley/costabarcodes', SHA: 'NONE'}
 		}
 		
 		return commit;
