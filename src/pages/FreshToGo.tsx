@@ -35,7 +35,7 @@ const FreshToGo: React.FC<FreshToGoProps> = () => {
 
 
     const DatePickerButton = forwardRef<HTMLButtonElement>((props: any, ref) => {
-        return <Button className='selectDateButton' variant="success" style={{margin: '30px'}} ref={ref} onClick={props.onClick} type="submit"><FontAwesomeIcon icon={faCalendarDay} style={{paddingRight: '10px'}}/>{props.value}</Button>
+        return <Button className="datePickler" variant="success" style={{margin: '30px'}} ref={ref} onClick={props.onClick} type="submit"><FontAwesomeIcon icon={faCalendarDay} style={{paddingRight: '10px'}}/>{props.value}</Button>
     });
 
     function fillTemplate(template: string, data: Record<string, string | number>): string {
@@ -46,8 +46,6 @@ const FreshToGo: React.FC<FreshToGoProps> = () => {
 
     const GenerateInterfaceXML = () => {
         var date = moment(ftgDateRef.current).format("DDMMYYYY");
-        //var filledXml = ftgTemplate.replace("{date}", date).replace("{qty}", ftgQtyRef.current.value);
-
         const data = {
             date: date,
             qty: ftgQtyRef.current.value
@@ -60,7 +58,7 @@ const FreshToGo: React.FC<FreshToGoProps> = () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `PER-CO-FTG-FreshToGo-${moment(ftgDateRef.current).format("DD-MM-YYYY")}.xml`;
+        a.download = `PER-CO-FTG-${moment(ftgDateRef.current).format("DD-MM-YYYY")}.xml`;
         a.click();
         URL.revokeObjectURL(url);
         a.remove();
@@ -105,6 +103,8 @@ const FreshToGo: React.FC<FreshToGoProps> = () => {
         
     },[]);
 
+
+    
     return (
         <div>
                 <div style={{
@@ -116,6 +116,12 @@ const FreshToGo: React.FC<FreshToGoProps> = () => {
                     <p>Creates a Scale Interface XML file to create a Fresh To Go Receipt to be received.</p>
                     <p>Place exported XML file into the Scale input folder to be interfaced.</p>
                     <hr />
+
+                    <Tooltip anchorSelect='.datePickler' place="top">Date of FTG Receipt</Tooltip>
+                    <Tooltip anchorSelect='.quantityInput' place="top">Quantity of FTG units</Tooltip>
+                    <Tooltip anchorSelect='.generateXML' place="top">Generates and downloads the XML interface file</Tooltip>
+                    <Tooltip anchorSelect='.showTemplate' place="top">Shows the current template used to generate the XML</Tooltip>
+                    <Tooltip anchorSelect='.updateTemplate' place="top">Applies the current changes to the loaded template</Tooltip>
 
                     <Form noValidate validated={validated} onSubmit={handleSubmit}>
                         <FormGroup>
@@ -131,7 +137,7 @@ const FreshToGo: React.FC<FreshToGoProps> = () => {
                         />
                         <InputGroup style={{margin: '10px'}}>
                             <InputGroup.Text id="ig-quantity">Quantity</InputGroup.Text>
-                            <Input id="quantityInput" name="quantityInput" innerRef={ftgQtyRef}  required={true} type="number" defaultValue={0}/>
+                            <Input className="quantityInput" id="quantityInput" name="quantityInput" innerRef={ftgQtyRef}  required={true} type="number" defaultValue={0}/>
                         </InputGroup>
                         <Form.Control.Feedback type="invalid"/>
 
@@ -140,7 +146,7 @@ const FreshToGo: React.FC<FreshToGoProps> = () => {
                             alignItems: "center",
                             justifyContent: "center"
                         }}>
-                            <Button style={{margin: "30px"}} variant="success" type="submit">Generate</Button>
+                            <Button style={{margin: "30px"}} variant="success" className="generateXML" id="generateXML" type="submit">Generate</Button>
                             
                         </div>
                         </FormGroup>
@@ -152,19 +158,19 @@ const FreshToGo: React.FC<FreshToGoProps> = () => {
                         alignItems: "center",
                         justifyContent: "center"
                     }}>
-                        <Button style={{margin: "30px"}} variant="primary" type="button" onClick={handleTemplateClick}><FontAwesomeIcon icon={faCode} style={{paddingRight: '10px'}}/>View Template</Button>
+                        <Button style={{margin: "30px"}} variant="primary" type="button" className="showTemplate" id="showTemplate" onClick={handleTemplateClick}><FontAwesomeIcon icon={faCode} style={{paddingRight: '10px'}}/>View Template</Button>
                     </div>
                     <div>
                         { ftgTemplateShowing ? <div>
                                 <InputGroup style={{margin: '10px', height: '300px'}}>
-                                    <Input id="templateInput" name="templateInput" innerRef={ftgTemplateRef}  required={true} type="textarea" defaultValue={ftgTemplateValue}/>
+                                    <Input className="templateInput" id="templateInput" name="templateInput" innerRef={ftgTemplateRef}  required={true} type="textarea" defaultValue={ftgTemplateValue}/>
                                 </InputGroup>
                                 <div style={{
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center"
                                 }}>
-                                    <Button style={{margin: "30px"}} variant="success" type="button" onClick={handleTemplateUpdate}>Update Template</Button>
+                                    <Button style={{margin: "30px"}} className="updateTemplate" id="updateTemplate" variant="success" type="button" onClick={handleTemplateUpdate}>Update Template</Button>
                                     
                                 </div>
                             </div>
