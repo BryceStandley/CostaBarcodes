@@ -1,7 +1,7 @@
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { Link } from 'react-router-dom';
 import React, { useRef, useState } from "react";
-import { faHome, faFileAlt, faSignOutAlt, faSignInAlt, faLightbulb, faUser, faBarcode, faSignsPost, faCalendarDay } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faFileAlt, faSignOutAlt, faSignInAlt, faLightbulb, faUser, faBarcode, faSignsPost, faCalendarDay, faBurger } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import latestRepoStats from 'objects/repo_stats'
@@ -48,6 +48,12 @@ function MobileNavigationBar()
                         <Link className='nav-link text-white' to='/bookings' onClick={onLinkClicked}>
                             <FontAwesomeIcon icon={faCalendarDay} style={{paddingRight: '10px'}}/>
                             Bookings
+                        </Link>
+                    </li>
+                    <li className='nav-item' >
+                        <Link className='nav-link text-white' to='/fresh-to-go' onClick={onLinkClicked}>
+                            <FontAwesomeIcon icon={faBurger} style={{paddingRight: '10px'}}/>
+                            Fresh To Go
                         </Link>
                     </li>
                     <li className='nav-item' >

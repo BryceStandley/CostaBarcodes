@@ -1,6 +1,6 @@
 {
   "name": "costa",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "dependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
@@ -20,6 +20,7 @@
     "bootstrap": "^5.3.3",
     "bwip-js": "^3.4.5",
     "cloudflare": "^0.0.8",
+    "costa": "file:",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "firebase": "^10.14.1",

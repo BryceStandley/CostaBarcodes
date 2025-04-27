@@ -10,6 +10,7 @@ import LocationSign from './pages/LocationSign'
 import BarcodeGen from './pages/Barcode-Gen';
 import DeliveryBookings from 'pages/DeliveryBookings';
 import MobileNavigationBar from 'components/navbar_mobile';
+import FreshToGo from './pages/FreshToGo';
 
 const App : React.FC = () => {
 
@@ -23,6 +24,7 @@ const App : React.FC = () => {
 						<div className="d-flex flex-column mainContent" id="page-wrap">
 							<Routes>
 								<Route path="/bookings" element={<DeliveryBookings /> }/>
+								<Route path="/fresh-to-go" element={<FreshToGo />} />
 								<Route path="/worksheet" element={<Worksheet /> }/>
 								<Route path="/pallet-label" element={ <PalletLabel /> }/>
 								<Route path="/scale-login" element={ <Scale /> }/>
