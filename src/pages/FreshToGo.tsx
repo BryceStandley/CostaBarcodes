@@ -48,9 +48,11 @@ const FreshToGo: React.FC<FreshToGoProps> = () => {
         var date = moment(ftgDateRef.current).format("DDMMYYYY");
         const data = {
             date: date,
+            dateRev: moment(ftgDateRef.current).format("YYYYMMDD"),
+            dateRevDash: moment(ftgDateRef.current).format("YYYY-MM-DD"),
             qty: ftgQtyRef.current.value
         };
-        console.log(data);
+        //console.log(data);
 
         var filledXml = fillTemplate(ftgTemplateValue, data);
 
@@ -58,7 +60,7 @@ const FreshToGo: React.FC<FreshToGoProps> = () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `PER-CO-FTG-${moment(ftgDateRef.current).format("DD-MM-YYYY")}.xml`;
+        a.download = `PER-CO-FTG-${moment(ftgDateRef.current).format("DD-MM-YYYY")}.rcxml`;
         a.click();
         URL.revokeObjectURL(url);
         a.remove();
@@ -72,9 +74,6 @@ const FreshToGo: React.FC<FreshToGoProps> = () => {
         if(ftgQtyRef.current.value && Number(ftgQtyRef.current.value) > 0)
         {
             setValidated(true);
-            console.log(ftgQtyRef.current.value);
-            console.log(ftgDateRef.current);
-            console.log(ftgDate);
             GenerateInterfaceXML();
         }
 
@@ -100,7 +99,7 @@ const FreshToGo: React.FC<FreshToGoProps> = () => {
     const handleDateChanged = useCallback(async (e) => {
         setFtgDate(e);
         ftgDateRef.current = e;
-        
+
     },[]);
 
 
