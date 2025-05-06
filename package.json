@@ -22,7 +22,7 @@
     "cloudflare": "^0.0.8",
     "costa": "file:",
     "dotenv": "^16.4.5",
-    "express": "^4.21.1",
+    "express": "^4.21.2",
     "firebase": "^10.14.1",
     "firebase-admin": "^11.11.1",
     "html2canvas": "^1.4.1",
